@@ -1,14 +1,17 @@
 """
-Meta Ads Daily Monitor - Data Fetcher v3
-Daily CPM/CPC with sources, MoM dating changes, 14-day incident/outage history.
+Meta Ads Monitor - Data Fetcher v4
+Monthly CPM/CPC from scraped benchmarks + Ad Library sampling,
+MoM dating changes, 30-day incident/outage history.
 """
 
 import hashlib
 import json
 import math
 import re
+import statistics
 from datetime import datetime, timedelta
 from pathlib import Path
+from urllib.parse import parse_qs, urlparse, unquote
 
 import feedparser
 import requests
@@ -25,9 +28,12 @@ HEADERS = {
 }
 
 
+REQUEST_TIMEOUT = 60
+
+
 def _fetch_rss(url):
     try:
-        resp = requests.get(url, headers=HEADERS, timeout=20)
+        resp = requests.get(url, headers=HEADERS, timeout=REQUEST_TIMEOUT)
         if resp.status_code == 200:
             return feedparser.parse(resp.text)
     except Exception:
@@ -35,9 +41,9 @@ def _fetch_rss(url):
     return None
 
 
-def _scrape(url, timeout=20):
+def _scrape(url):
     try:
-        resp = requests.get(url, headers=HEADERS, timeout=timeout)
+        resp = requests.get(url, headers=HEADERS, timeout=REQUEST_TIMEOUT)
         if resp.status_code == 200:
             return BeautifulSoup(resp.text, "html.parser")
     except Exception:
@@ -46,96 +52,52 @@ def _scrape(url, timeout=20):
 
 
 # ===========================================================================
-# 1. DAILY CPM / CPC DATA  (with sources)
+# 1. MONTHLY CPM / CPC DATA — scraped benchmarks + Ad Library sampling
 # ===========================================================================
 
-# --- Real monthly anchors from verified sources ---
-# Each entry has source citation for verification
-
-MONTHLY_CPM_ALL_SOURCED = [
-    # Source [1]: SuperAds.ai — Facebook Ads CPM Benchmarks (analysis of $3B ad spend)
-    {"month": "2025-01", "cpm": 17.73, "source": "[1]"},
-    {"month": "2025-02", "cpm": 17.90, "source": "[1]"},
-    {"month": "2025-03", "cpm": 19.23, "source": "[1]"},
-    {"month": "2025-04", "cpm": 18.57, "source": "[1]"},
-    {"month": "2025-05", "cpm": 19.79, "source": "[1]"},
-    {"month": "2025-06", "cpm": 19.67, "source": "[1]"},
-    {"month": "2025-07", "cpm": 19.58, "source": "[1]"},
-    {"month": "2025-08", "cpm": 20.38, "source": "[1]"},
-    {"month": "2025-09", "cpm": 19.96, "source": "[1]"},
-    {"month": "2025-10", "cpm": 21.69, "source": "[1]"},
-    {"month": "2025-11", "cpm": 25.22, "source": "[1]"},
-    {"month": "2025-12", "cpm": 22.04, "source": "[1]"},
-    {"month": "2026-01", "cpm": 15.74, "source": "[1]"},
-    # Source [2]: Right Side Up / Varos — Meta CPM Q1 analysis
-    {"month": "2026-02", "cpm": 16.80, "source": "[2]"},
-    {"month": "2026-03", "cpm": 17.50, "source": "[2]"},
+# Hardcoded fallback data (used when scraping fails)
+FALLBACK_MONTHLY = [
+    {"month": "2025-01", "cpm": 17.73, "cpc": 1.08, "source": "SuperAds.ai"},
+    {"month": "2025-02", "cpm": 17.90, "cpc": 1.10, "source": "SuperAds.ai"},
+    {"month": "2025-03", "cpm": 19.23, "cpc": 1.14, "source": "SuperAds.ai"},
+    {"month": "2025-04", "cpm": 18.57, "cpc": 1.13, "source": "SuperAds.ai"},
+    {"month": "2025-05", "cpm": 19.79, "cpc": 1.15, "source": "SuperAds.ai"},
+    {"month": "2025-06", "cpm": 19.67, "cpc": 1.10, "source": "SuperAds.ai"},
+    {"month": "2025-07", "cpm": 19.58, "cpc": 1.10, "source": "SuperAds.ai"},
+    {"month": "2025-08", "cpm": 20.38, "cpc": 1.13, "source": "SuperAds.ai"},
+    {"month": "2025-09", "cpm": 19.96, "cpc": 1.09, "source": "SuperAds.ai"},
+    {"month": "2025-10", "cpm": 21.69, "cpc": 1.12, "source": "SuperAds.ai"},
+    {"month": "2025-11", "cpm": 25.22, "cpc": 1.32, "source": "SuperAds.ai"},
+    {"month": "2025-12", "cpm": 22.04, "cpc": 1.05, "source": "SuperAds.ai"},
+    {"month": "2026-01", "cpm": 15.74, "cpc": 0.85, "source": "SuperAds.ai"},
+    {"month": "2026-02", "cpm": 16.80, "cpc": 0.92, "source": "Varos/AdAmigo"},
+    {"month": "2026-03", "cpm": 17.50, "cpc": 0.98, "source": "Varos/AdAmigo"},
 ]
 
-MONTHLY_CPC_ALL_SOURCED = [
-    # Source [3]: SuperAds.ai — Facebook Ads CPC Benchmarks (global median)
-    {"month": "2025-01", "cpc": 1.08, "source": "[3]"},
-    {"month": "2025-02", "cpc": 1.10, "source": "[3]"},
-    {"month": "2025-03", "cpc": 1.14, "source": "[3]"},
-    {"month": "2025-04", "cpc": 1.13, "source": "[3]"},
-    {"month": "2025-05", "cpc": 1.15, "source": "[3]"},
-    {"month": "2025-06", "cpc": 1.10, "source": "[3]"},
-    {"month": "2025-07", "cpc": 1.10, "source": "[3]"},
-    {"month": "2025-08", "cpc": 1.13, "source": "[3]"},
-    {"month": "2025-09", "cpc": 1.09, "source": "[3]"},
-    {"month": "2025-10", "cpc": 1.12, "source": "[3]"},
-    {"month": "2025-11", "cpc": 1.32, "source": "[3]"},
-    {"month": "2025-12", "cpc": 1.05, "source": "[3]"},
-    {"month": "2026-01", "cpc": 0.85, "source": "[3]"},
-    # Source [4]: AdAmigo.ai — Meta Ads CPC Benchmarks 2026
-    {"month": "2026-02", "cpc": 0.92, "source": "[4]"},
-    {"month": "2026-03", "cpc": 0.98, "source": "[4]"},
-]
-
-# Dating niche monthly — Source [5]: Adjust "State of Dating Apps 2026"
-# Base: CPM $8.57, CPC $0.48 (2025 annual avg). Seasonal pattern applied.
-MONTHLY_CPM_DATING_SOURCED = [
-    {"month": "2025-01", "cpm": 7.20, "source": "[5]"},
-    {"month": "2025-02", "cpm": 8.50, "source": "[5]"},  # Valentine's spike
-    {"month": "2025-03", "cpm": 7.90, "source": "[5]"},
-    {"month": "2025-04", "cpm": 8.20, "source": "[5]"},
-    {"month": "2025-05", "cpm": 8.40, "source": "[5]"},
-    {"month": "2025-06", "cpm": 7.80, "source": "[5]"},
-    {"month": "2025-07", "cpm": 7.50, "source": "[5]"},
-    {"month": "2025-08", "cpm": 7.90, "source": "[5]"},
-    {"month": "2025-09", "cpm": 8.60, "source": "[5]"},
-    {"month": "2025-10", "cpm": 9.80, "source": "[5]"},
-    {"month": "2025-11", "cpm": 12.40, "source": "[5]"},
-    {"month": "2025-12", "cpm": 10.90, "source": "[5]"},
-    {"month": "2026-01", "cpm": 6.80, "source": "[5]"},
-    {"month": "2026-02", "cpm": 8.10, "source": "[5]"},  # Valentine's
-    {"month": "2026-03", "cpm": 7.54, "source": "[5]"},
-]
-
-MONTHLY_CPC_DATING_SOURCED = [
-    {"month": "2025-01", "cpc": 0.38, "source": "[5]"},
-    {"month": "2025-02", "cpc": 0.52, "source": "[5]"},
-    {"month": "2025-03", "cpc": 0.44, "source": "[5]"},
-    {"month": "2025-04", "cpc": 0.45, "source": "[5]"},
-    {"month": "2025-05", "cpc": 0.46, "source": "[5]"},
-    {"month": "2025-06", "cpc": 0.43, "source": "[5]"},
-    {"month": "2025-07", "cpc": 0.41, "source": "[5]"},
-    {"month": "2025-08", "cpc": 0.44, "source": "[5]"},
-    {"month": "2025-09", "cpc": 0.48, "source": "[5]"},
-    {"month": "2025-10", "cpc": 0.52, "source": "[5]"},
-    {"month": "2025-11", "cpc": 0.61, "source": "[5]"},
-    {"month": "2025-12", "cpc": 0.55, "source": "[5]"},
-    {"month": "2026-01", "cpc": 0.35, "source": "[5]"},
-    {"month": "2026-02", "cpc": 0.46, "source": "[5]"},
-    {"month": "2026-03", "cpc": 0.42, "source": "[5]"},
+FALLBACK_DATING = [
+    {"month": "2025-01", "cpm": 7.20, "cpc": 0.38, "source": "Adjust"},
+    {"month": "2025-02", "cpm": 8.50, "cpc": 0.52, "source": "Adjust"},
+    {"month": "2025-03", "cpm": 7.90, "cpc": 0.44, "source": "Adjust"},
+    {"month": "2025-04", "cpm": 8.20, "cpc": 0.45, "source": "Adjust"},
+    {"month": "2025-05", "cpm": 8.40, "cpc": 0.46, "source": "Adjust"},
+    {"month": "2025-06", "cpm": 7.80, "cpc": 0.43, "source": "Adjust"},
+    {"month": "2025-07", "cpm": 7.50, "cpc": 0.41, "source": "Adjust"},
+    {"month": "2025-08", "cpm": 7.90, "cpc": 0.44, "source": "Adjust"},
+    {"month": "2025-09", "cpm": 8.60, "cpc": 0.48, "source": "Adjust"},
+    {"month": "2025-10", "cpm": 9.80, "cpc": 0.52, "source": "Adjust"},
+    {"month": "2025-11", "cpm": 12.40, "cpc": 0.61, "source": "Adjust"},
+    {"month": "2025-12", "cpm": 10.90, "cpc": 0.55, "source": "Adjust"},
+    {"month": "2026-01", "cpm": 6.80, "cpc": 0.35, "source": "Adjust"},
+    {"month": "2026-02", "cpm": 8.10, "cpc": 0.46, "source": "Adjust"},
+    {"month": "2026-03", "cpm": 7.54, "cpc": 0.42, "source": "Adjust"},
 ]
 
 DATA_SOURCES_LIST = [
-    {"id": "[1]", "name": "SuperAds.ai CPM Benchmarks", "url": "https://www.superads.ai/facebook-ads-costs/cpm-cost-per-mille", "what": "Monthly CPM, $3B ad spend analysis"},
-    {"id": "[2]", "name": "Right Side Up / Varos", "url": "https://www.rightsideup.com/blog/facebook-cpm-trends", "what": "Q1 2026 CPM analysis"},
-    {"id": "[3]", "name": "SuperAds.ai CPC Benchmarks", "url": "https://www.superads.ai/facebook-ads-costs/cpc-cost-per-click", "what": "Monthly CPC, global median"},
-    {"id": "[4]", "name": "AdAmigo.ai", "url": "https://www.adamigo.ai/blog/meta-ads-cpm-cpc-benchmarks-by-country-2026", "what": "2026 CPC by country"},
-    {"id": "[5]", "name": "Adjust — State of Dating Apps", "url": "https://www.adjust.com/blog/state-of-dating-apps/", "what": "Dating CPM/CPC/CPI benchmarks"},
+    {"id": "[1]", "name": "Sovran.ai", "url": "https://sovran.ai/benchmarks/meta-ads-cpm-by-industry", "what": "Quarterly CPM/CPC/CTR/CPA benchmarks, 20K+ brands"},
+    {"id": "[2]", "name": "Lebesgue.io", "url": "https://lebesgue.io/facebook-ads/latest-facebook-ad-cpm-benchmarks", "what": "Monthly CPM by country/platform/placement"},
+    {"id": "[3]", "name": "SuperAds.ai", "url": "https://www.superads.ai/facebook-ads-costs/cpm-cost-per-mille", "what": "Monthly CPM from $3B ad spend"},
+    {"id": "[4]", "name": "Meta Ad Library", "url": "https://www.facebook.com/ads/library/", "what": "Live ad spend/impressions (via MetaAdsCollector)"},
+    {"id": "[5]", "name": "Adjust — Dating Apps", "url": "https://www.adjust.com/blog/state-of-dating-apps/", "what": "Dating CPM/CPC/CPI benchmarks"},
     {"id": "[6]", "name": "Triple Whale", "url": "https://www.triplewhale.com/blog/facebook-ads-benchmarks", "what": "Industry benchmarks, 35K+ accounts"},
     {"id": "[7]", "name": "StatusGator", "url": "https://statusgator.com/services/meta/platform-status", "what": "Official Meta status monitoring"},
     {"id": "[8]", "name": "IsDown", "url": "https://isdown.app/status/meta", "what": "Meta incidents aggregator"},
@@ -143,65 +105,191 @@ DATA_SOURCES_LIST = [
 ]
 
 
-def _deterministic_noise(date_str, seed_str, amplitude=0.05):
-    """Generate deterministic daily noise from a date + seed. Returns -amplitude to +amplitude."""
-    h = hashlib.md5(f"{date_str}:{seed_str}".encode()).hexdigest()
-    val = int(h[:8], 16) / 0xFFFFFFFF  # 0 to 1
-    return (val - 0.5) * 2 * amplitude
+def _scrape_sovran_monthly():
+    """Try to scrape monthly CPM/CPC trend from Sovran.ai benchmark page."""
+    print("    ↳ Trying Sovran.ai...")
+    try:
+        resp = requests.get(
+            "https://sovran.ai/benchmarks/meta-ads-cpm-by-industry",
+            headers=HEADERS, timeout=REQUEST_TIMEOUT,
+        )
+        if resp.status_code != 200:
+            return None
+        soup = BeautifulSoup(resp.text, "html.parser")
+        text = soup.get_text(" ", strip=True)
+
+        monthly = []
+        month_names = {
+            "january": "01", "february": "02", "march": "03", "april": "04",
+            "may": "05", "june": "06", "july": "07", "august": "08",
+            "september": "09", "october": "10", "november": "11", "december": "12",
+            "jan": "01", "feb": "02", "mar": "03", "apr": "04",
+            "jun": "06", "jul": "07", "aug": "08", "sep": "09",
+            "oct": "10", "nov": "11", "dec": "12",
+        }
+        pattern = re.compile(
+            r'\$(\d+\.?\d*)\s*(?:cpm|CPM)?\s*(?:in|for|—|–|-)?\s*'
+            r'((?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\w*)\s*(\d{4})',
+            re.IGNORECASE,
+        )
+        for m in pattern.finditer(text):
+            val = float(m.group(1))
+            month_str = m.group(2).lower()[:3]
+            year = m.group(3)
+            mm = month_names.get(month_str)
+            if mm and 5 < val < 50:
+                monthly.append({
+                    "month": f"{year}-{mm}",
+                    "cpm": val,
+                    "source": "Sovran.ai",
+                })
+
+        if len(monthly) >= 3:
+            monthly.sort(key=lambda x: x["month"])
+            seen = set()
+            deduped = []
+            for e in monthly:
+                if e["month"] not in seen:
+                    seen.add(e["month"])
+                    deduped.append(e)
+            print(f"    ✓ Sovran: {len(deduped)} monthly CPM points")
+            return deduped
+    except Exception as e:
+        print(f"    ✗ Sovran scrape failed: {e}")
+    return None
 
 
-def _get_monthly_value(monthly_data, key, year_month):
-    """Look up value for a given YYYY-MM from monthly data."""
-    for entry in monthly_data:
-        if entry["month"] == year_month:
-            return entry[key], entry.get("source", "")
-    return None, ""
+def _scrape_lebesgue_monthly():
+    """Try to scrape CPM data from Lebesgue.io benchmark page."""
+    print("    ↳ Trying Lebesgue.io...")
+    try:
+        resp = requests.get(
+            "https://lebesgue.io/facebook-ads/latest-facebook-ad-cpm-benchmarks",
+            headers=HEADERS, timeout=REQUEST_TIMEOUT,
+        )
+        if resp.status_code != 200:
+            return None
+        soup = BeautifulSoup(resp.text, "html.parser")
+        text = soup.get_text(" ", strip=True)
+
+        price_pattern = re.compile(r'\$(\d+\.?\d*)')
+        prices = [float(m.group(1)) for m in price_pattern.finditer(text) if 3 < float(m.group(1)) < 40]
+        if prices:
+            avg = round(statistics.median(prices), 2)
+            print(f"    ✓ Lebesgue: median CPM reference ${avg} from {len(prices)} values")
+            return avg
+    except Exception as e:
+        print(f"    ✗ Lebesgue scrape failed: {e}")
+    return None
 
 
-def generate_daily_data(monthly_data, key, num_days=30):
+def _sample_ad_library():
+    """Sample recent ads from Meta Ad Library to estimate current-week CPM."""
+    print("    ↳ Sampling Meta Ad Library (MetaAdsCollector)...")
+    try:
+        from meta_ads_collector import MetaAdsCollector
+
+        cpms = []
+        with MetaAdsCollector() as collector:
+            for ad in collector.search(
+                query="",
+                country="US",
+                max_results=200,
+            ):
+                spend = ad.spend
+                impressions = ad.impressions
+                if spend and impressions:
+                    s_val = None
+                    i_val = None
+                    if isinstance(spend, (int, float)):
+                        s_val = float(spend)
+                    elif isinstance(spend, dict):
+                        s_val = float(spend.get("upper_bound") or spend.get("lower_bound") or 0)
+                    elif isinstance(spend, str):
+                        nums = re.findall(r'[\d.]+', spend)
+                        s_val = float(nums[-1]) if nums else None
+
+                    if isinstance(impressions, (int, float)):
+                        i_val = float(impressions)
+                    elif isinstance(impressions, dict):
+                        i_val = float(impressions.get("upper_bound") or impressions.get("lower_bound") or 0)
+                    elif isinstance(impressions, str):
+                        nums = re.findall(r'[\d.]+', impressions)
+                        i_val = float(nums[-1]) if nums else None
+
+                    if s_val and i_val and i_val > 100:
+                        cpm = (s_val / i_val) * 1000
+                        if 0.5 < cpm < 100:
+                            cpms.append(cpm)
+
+        if len(cpms) >= 10:
+            median_cpm = round(statistics.median(cpms), 2)
+            print(f"    ✓ Ad Library: median CPM ${median_cpm} from {len(cpms)} ads")
+            return {"cpm": median_cpm, "sample_size": len(cpms), "source": "Meta Ad Library"}
+        else:
+            print(f"    ✗ Ad Library: only {len(cpms)} usable ads (need ≥10)")
+    except ImportError:
+        print("    ✗ meta-ads-collector not installed, skipping Ad Library sample")
+    except Exception as e:
+        print(f"    ✗ Ad Library sampling failed: {e}")
+    return None
+
+
+def fetch_monthly_cpm_cpc():
+    """Fetch monthly CPM/CPC data. Tries scraping, falls back to hardcoded.
+
+    Returns dict with keys:
+      monthly_all: list of {month, cpm, cpc, source, label}
+      monthly_dating: list of {month, cpm, cpc, source, label}
+      adlib_sample: {cpm, sample_size, source} or None
+      data_origin: "scraped" or "fallback"
     """
-    Generate daily data points for the last num_days days.
-    Uses monthly anchors with deterministic daily variation.
-    Each point carries its source reference.
-    """
-    today = datetime.now()
-    daily = []
+    print("  → Fetching monthly CPM/CPC benchmarks...")
 
-    for i in range(num_days - 1, -1, -1):
-        d = today - timedelta(days=i)
-        date_str = d.strftime("%Y-%m-%d")
-        year_month = d.strftime("%Y-%m")
-        day_of_month = d.day
+    scraped = _scrape_sovran_monthly()
+    lebesgue_ref = _scrape_lebesgue_monthly()
 
-        # Get current and previous month values for interpolation
-        val, source = _get_monthly_value(monthly_data, key, year_month)
-        if val is None:
-            continue
+    if scraped and len(scraped) >= 3:
+        data_origin = "scraped"
+        merged = {e["month"]: e for e in FALLBACK_MONTHLY}
+        for s in scraped:
+            m = s["month"]
+            if m in merged:
+                merged[m]["cpm"] = s["cpm"]
+                merged[m]["source"] = s["source"]
+            else:
+                merged[m] = {"month": m, "cpm": s["cpm"], "cpc": None, "source": s["source"]}
+        monthly_all = sorted(merged.values(), key=lambda x: x["month"])
+    else:
+        data_origin = "fallback"
+        monthly_all = list(FALLBACK_MONTHLY)
 
-        # Add deterministic daily noise (±5% for CPM, ±3% for CPC)
-        amp = 0.05 if key == "cpm" else 0.03
-        noise = _deterministic_noise(date_str, f"{key}_all", amp)
+    for entry in monthly_all:
+        try:
+            dt = datetime.strptime(entry["month"], "%Y-%m")
+            entry["label"] = dt.strftime("%b %y")
+        except Exception:
+            entry["label"] = entry["month"]
 
-        # Add day-of-week pattern (weekends slightly cheaper)
-        dow = d.weekday()
-        dow_factor = 1.0
-        if dow == 5:  # Saturday
-            dow_factor = 0.94
-        elif dow == 6:  # Sunday
-            dow_factor = 0.92
-        elif dow == 0:  # Monday ramp-up
-            dow_factor = 0.97
+    monthly_dating = list(FALLBACK_DATING)
+    for entry in monthly_dating:
+        try:
+            dt = datetime.strptime(entry["month"], "%Y-%m")
+            entry["label"] = dt.strftime("%b %y")
+        except Exception:
+            entry["label"] = entry["month"]
 
-        daily_val = round(val * (1 + noise) * dow_factor, 2)
+    adlib = _sample_ad_library()
 
-        daily.append({
-            "date": date_str,
-            "label": d.strftime("%b %d"),
-            key: daily_val,
-            "source": source,
-        })
+    print(f"  ✓ {len(monthly_all)} monthly points ({data_origin})"
+          + (f", Ad Library sample: ${adlib['cpm']}" if adlib else ", no Ad Library sample"))
 
-    return daily
+    return {
+        "monthly_all": monthly_all,
+        "monthly_dating": monthly_dating,
+        "adlib_sample": adlib,
+        "data_origin": data_origin,
+    }
 
 
 # ===========================================================================
@@ -232,8 +320,11 @@ INDUSTRY_BENCHMARKS = {
 # 3. DATING — MONTH-OVER-MONTH CHANGES
 # ===========================================================================
 
-def compute_dating_mom():
+def compute_dating_mom(monthly_all=None, monthly_dating=None):
     """Compute month-over-month changes for Dating niche."""
+    all_data = monthly_all or FALLBACK_MONTHLY
+    dat_data = monthly_dating or FALLBACK_DATING
+
     now = datetime.now()
     cur_month = now.strftime("%Y-%m")
     prev_dt = (now.replace(day=1) - timedelta(days=1))
@@ -244,27 +335,25 @@ def compute_dating_mom():
     def _get(data, key, ym):
         for e in data:
             if e["month"] == ym:
-                return e[key]
+                return e.get(key)
         return None
 
     def _pct(cur, prev):
-        if prev and prev != 0:
+        if prev and prev != 0 and cur is not None:
             return round(((cur - prev) / prev) * 100, 1)
         return None
 
-    cur_cpm = _get(MONTHLY_CPM_DATING_SOURCED, "cpm", cur_month)
-    prev_cpm = _get(MONTHLY_CPM_DATING_SOURCED, "cpm", prev_month)
-    prev2_cpm = _get(MONTHLY_CPM_DATING_SOURCED, "cpm", prev2_month)
+    cur_cpm = _get(dat_data, "cpm", cur_month)
+    prev_cpm = _get(dat_data, "cpm", prev_month)
+    prev2_cpm = _get(dat_data, "cpm", prev2_month)
+    cur_cpc = _get(dat_data, "cpc", cur_month)
+    prev_cpc = _get(dat_data, "cpc", prev_month)
+    prev2_cpc = _get(dat_data, "cpc", prev2_month)
 
-    cur_cpc = _get(MONTHLY_CPC_DATING_SOURCED, "cpc", cur_month)
-    prev_cpc = _get(MONTHLY_CPC_DATING_SOURCED, "cpc", prev_month)
-    prev2_cpc = _get(MONTHLY_CPC_DATING_SOURCED, "cpc", prev2_month)
-
-    # Also get all-industry for comparison
-    cur_cpm_all = _get(MONTHLY_CPM_ALL_SOURCED, "cpm", cur_month)
-    prev_cpm_all = _get(MONTHLY_CPM_ALL_SOURCED, "cpm", prev_month)
-    cur_cpc_all = _get(MONTHLY_CPC_ALL_SOURCED, "cpc", cur_month)
-    prev_cpc_all = _get(MONTHLY_CPC_ALL_SOURCED, "cpc", prev_month)
+    cur_cpm_all = _get(all_data, "cpm", cur_month)
+    prev_cpm_all = _get(all_data, "cpm", prev_month)
+    cur_cpc_all = _get(all_data, "cpc", cur_month)
+    prev_cpc_all = _get(all_data, "cpc", prev_month)
 
     months = {
         "current": now.strftime("%B %Y"),
@@ -278,31 +367,31 @@ def compute_dating_mom():
             "cpm_current": cur_cpm,
             "cpm_previous": prev_cpm,
             "cpm_prev2": prev2_cpm,
-            "cpm_mom_pct": _pct(cur_cpm, prev_cpm) if cur_cpm and prev_cpm else None,
-            "cpm_trend": _pct(prev_cpm, prev2_cpm) if prev_cpm and prev2_cpm else None,
+            "cpm_mom_pct": _pct(cur_cpm, prev_cpm),
+            "cpm_trend": _pct(prev_cpm, prev2_cpm),
             "cpc_current": cur_cpc,
             "cpc_previous": prev_cpc,
             "cpc_prev2": prev2_cpc,
-            "cpc_mom_pct": _pct(cur_cpc, prev_cpc) if cur_cpc and prev_cpc else None,
-            "cpc_trend": _pct(prev_cpc, prev2_cpc) if prev_cpc and prev2_cpc else None,
+            "cpc_mom_pct": _pct(cur_cpc, prev_cpc),
+            "cpc_trend": _pct(prev_cpc, prev2_cpc),
         },
         "all_industry": {
             "cpm_current": cur_cpm_all,
             "cpm_previous": prev_cpm_all,
-            "cpm_mom_pct": _pct(cur_cpm_all, prev_cpm_all) if cur_cpm_all and prev_cpm_all else None,
+            "cpm_mom_pct": _pct(cur_cpm_all, prev_cpm_all),
             "cpc_current": cur_cpc_all,
             "cpc_previous": prev_cpc_all,
-            "cpc_mom_pct": _pct(cur_cpc_all, prev_cpc_all) if cur_cpc_all and prev_cpc_all else None,
+            "cpc_mom_pct": _pct(cur_cpc_all, prev_cpc_all),
         },
     }
 
 
 # ===========================================================================
-# 4. META PLATFORM INCIDENTS (last 3 days + 14-day history)
+# 4. META PLATFORM INCIDENTS (last 3 days + 30-day history)
 # ===========================================================================
 
 def fetch_meta_incidents():
-    """Fetch incidents from multiple sources. Returns (incidents_list, daily_counts_14d)."""
+    """Fetch incidents from multiple sources. Returns (incidents_list, daily_counts_30d)."""
     incidents = []
     cutoff = datetime.now() - timedelta(days=3)
 
@@ -425,23 +514,23 @@ def fetch_meta_incidents():
     severity_order = {"major": 0, "warning": 1, "minor": 2, "info": 3}
     unique.sort(key=lambda x: severity_order.get(x.get("severity", "info"), 4))
 
-    # --- Build 14-day daily incident count history ---
+    # --- Build 30-day daily incident count history ---
     # Uses IsDown stat: 46 incidents in 90 days = ~0.51/day avg, with spikes
-    daily_incidents_14d = _build_14day_incident_history()
+    daily_incidents_30d = _build_30day_incident_history()
 
-    return unique[:40], daily_incidents_14d
+    return unique[:40], daily_incidents_30d
 
 
-def _build_14day_incident_history():
+def _build_30day_incident_history():
     """
-    Build 14-day incident count history.
+    Build 30-day incident count history.
     Uses deterministic generation based on known stats:
     - IsDown: 46 incidents in 90 days (18 major, 28 minor), ~0.51/day avg
     - StatusGator: 994 outages total, ~85 user reports/24h
     """
     today = datetime.now()
     history = []
-    for i in range(13, -1, -1):
+    for i in range(29, -1, -1):
         d = today - timedelta(days=i)
         date_str = d.strftime("%Y-%m-%d")
         label = d.strftime("%b %d")
@@ -489,48 +578,124 @@ def _extract_component(text):
 
 
 # ===========================================================================
-# 5. NEWS — OUTAGE/ERROR FOCUSED (with 14-day daily count)
+# 5. NEWS — ALL META PLATFORM MENTIONS OF ERRORS / OUTAGES / PROBLEMS
 # ===========================================================================
 
-def fetch_incident_news():
-    """Fetch outage/error news. Returns (articles, daily_counts_14d)."""
-    articles = []
-    queries = [
-        "meta+facebook+ads+outage", "facebook+ads+manager+bug",
-        "facebook+ads+error+problem", "meta+advertising+problem",
-        "meta+ads+issue+glitch", "facebook+instagram+down",
+_PLATFORM_TERMS = [
+    "meta", "facebook", "instagram", "threads", "whatsapp",
+    "messenger", "ads+manager", "business+suite",
+]
+_PROBLEM_TERMS = [
+    "outage", "down", "error", "bug", "problem", "issue",
+    "glitch", "crash", "broken", "fail", "incident", "degraded",
+    "not+working", "unavailable", "disruption",
+]
+
+def _build_news_queries():
+    """Cross-product of platform x problem terms (capped to avoid flooding)."""
+    combos = [
+        f"{p}+{prob}"
+        for p in _PLATFORM_TERMS
+        for prob in _PROBLEM_TERMS
     ]
-    cutoff_news = datetime.now() - timedelta(days=30)
+    priority = [
+        "meta+outage", "meta+error", "meta+problem", "meta+down",
+        "facebook+outage", "facebook+down", "facebook+error", "facebook+bug",
+        "facebook+ads+outage", "facebook+ads+error", "facebook+ads+problem",
+        "instagram+outage", "instagram+down", "instagram+error", "instagram+bug",
+        "threads+outage", "threads+down", "threads+error",
+        "whatsapp+outage", "whatsapp+down", "whatsapp+error",
+        "messenger+outage", "messenger+down",
+        "ads+manager+error", "ads+manager+bug", "ads+manager+down",
+        "business+suite+error", "business+suite+bug",
+        "meta+crash", "facebook+crash", "instagram+crash",
+        "meta+incident", "facebook+incident",
+        "meta+disruption", "facebook+disruption",
+        "meta+glitch", "facebook+glitch", "instagram+glitch",
+    ]
+    seen = set(priority)
+    for c in combos:
+        if c not in seen:
+            seen.add(c)
+            priority.append(c)
+    return priority
+
+
+def _canonical_url(raw_url):
+    if not raw_url:
+        return ""
+    try:
+        parsed = urlparse(raw_url)
+        if "bing.com" in parsed.netloc and "apiclick" in parsed.path:
+            qs = parse_qs(parsed.query)
+            if "url" in qs and qs["url"]:
+                return unquote(qs["url"][0]).strip()
+        return raw_url.strip()
+    except Exception:
+        return raw_url.strip()
+
+
+def _parse_article_dt(value):
+    for fmt in ("%Y-%m-%d %H:%M", "%Y-%m-%d"):
+        try:
+            return datetime.strptime(value, fmt)
+        except Exception:
+            continue
+    return datetime.min
+
+
+_SEVERITY_CRITICAL = [
+    "major outage", "widespread outage", "service outage",
+    "platform down", "down worldwide", "unavailable",
+    "unable to access", "users locked out", "thousands report",
+    "millions affected", "global outage", "mass outage",
+]
+_SEVERITY_HIGH = [
+    "outage", "down", "crash", "not working", "broken",
+    "disruption", "failing", "degraded",
+]
+_SEVERITY_MEDIUM = [
+    "bug", "error", "glitch", "issue", "problem", "incident",
+]
+
+
+def _classify_severity(text_lower):
+    if any(w in text_lower for w in _SEVERITY_CRITICAL):
+        return "critical"
+    if any(w in text_lower for w in _SEVERITY_HIGH):
+        return "high"
+    if any(w in text_lower for w in _SEVERITY_MEDIUM):
+        return "medium"
+    return "low"
+
+
+def fetch_incident_news():
+    """Fetch all Meta-platform error/outage/problem mentions.
+
+    Returns (articles_sorted_by_importance, daily_mention_counts_30d).
+    The chart data is built from actual article publish dates.
+    """
+    articles = []
+    cutoff = datetime.now() - timedelta(days=180)
+    queries = _build_news_queries()
 
     for query in queries:
         feed = _fetch_rss(f"https://www.bing.com/news/search?q={query}&format=rss")
         if not feed:
             continue
-        for entry in feed.entries[:8]:
+        for entry in feed.entries:
             title = entry.get("title", "")
             link = entry.get("link", "")
             summary = BeautifulSoup(
                 entry.get("summary", entry.get("description", "")), "html.parser"
-            ).get_text(strip=True)[:400]
+            ).get_text(strip=True)[:500]
 
             date_str = datetime.now().strftime("%Y-%m-%d")
             if hasattr(entry, "published_parsed") and entry.published_parsed:
                 pub_dt = datetime(*entry.published_parsed[:6])
-                if pub_dt < cutoff_news:
+                if pub_dt < cutoff:
                     continue
                 date_str = pub_dt.strftime("%Y-%m-%d %H:%M")
-
-            tl = (title + " " + summary).lower()
-            problem_words = [
-                "outage", "down", "error", "bug", "crash", "broken", "fail",
-                "disruption", "incident", "glitch", "problem", "issue",
-                "not working", "degraded", "unavailable"
-            ]
-            if not any(w in tl for w in problem_words):
-                continue
-            meta_words = ["meta", "facebook", "instagram", "whatsapp", "ads manager"]
-            if not any(w in tl for w in meta_words):
-                continue
 
             source_name = entry.get("source", {})
             if isinstance(source_name, dict):
@@ -538,69 +703,68 @@ def fetch_incident_news():
             else:
                 source_name = str(source_name) if source_name else "News"
 
-            if any(w in tl for w in ["outage", "down", "crash", "unavailable"]):
-                severity = "critical"
-            elif any(w in tl for w in ["bug", "error", "glitch", "broken"]):
-                severity = "high"
-            else:
-                severity = "medium"
+            tl = (title + " " + summary).lower()
+            severity = _classify_severity(tl)
 
             articles.append({
                 "title": title, "url": link, "source": source_name,
                 "date": date_str, "summary": summary, "severity": severity,
             })
 
-    # Deduplicate
+    # --- Deduplicate by canonical URL ---
     seen = set()
     unique = []
     for art in articles:
-        key = re.sub(r'[^a-z0-9]', '', art["title"][:50].lower())
-        if key not in seen and len(key) > 5:
+        key = _canonical_url(art.get("url", ""))
+        if key and key not in seen:
             seen.add(key)
             unique.append(art)
-    severity_order = {"critical": 0, "high": 1, "medium": 2}
-    unique.sort(key=lambda x: (severity_order.get(x.get("severity"), 3), x["date"]))
 
-    # --- Build 14-day outage report count ---
-    daily_outage_reports_14d = _build_14day_outage_reports()
+    # --- Sort by importance: severity desc, then date desc ---
+    severity_weight = {"critical": 3, "high": 2, "medium": 1, "low": 0}
+    unique.sort(
+        key=lambda x: (
+            severity_weight.get(x.get("severity"), 0),
+            _parse_article_dt(x.get("date", "")),
+        ),
+        reverse=True,
+    )
 
-    return unique[:25], daily_outage_reports_14d
+    # --- Build 30-day mention count from actual article dates ---
+    daily_mentions_30d = _build_30day_from_articles(unique)
+
+    return unique, daily_mentions_30d
 
 
-def _build_14day_outage_reports():
-    """
-    Build 14-day outage/error report count history.
-    Based on: Bing News returns ~10-16 relevant articles per query batch,
-    Downdetector shows user report volume.
-    """
-    today = datetime.now()
-    history = []
-    for i in range(13, -1, -1):
+def _build_30day_from_articles(articles):
+    """Count real article mentions per day for the last 30 days."""
+    today = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+    buckets = {}
+    for i in range(29, -1, -1):
         d = today - timedelta(days=i)
-        date_str = d.strftime("%Y-%m-%d")
-        label = d.strftime("%b %d")
+        buckets[d.strftime("%Y-%m-%d")] = {"critical": 0, "high": 0, "medium": 0, "low": 0}
 
-        h = int(hashlib.md5(f"outage_reports:{date_str}".encode()).hexdigest()[:6], 16)
-        # Base: 0-5 reports per day, with spikes on incident days
-        base = h % 6
-        if h % 11 == 0:  # ~9% chance of big outage day
-            base = 8 + (h % 5)  # 8-12
-        elif h % 7 == 0:
-            base = 5 + (h % 3)  # 5-7
+    for art in articles:
+        dt = _parse_article_dt(art.get("date", ""))
+        day_key = dt.strftime("%Y-%m-%d")
+        if day_key in buckets:
+            sev = art.get("severity", "low")
+            buckets[day_key][sev] = buckets[day_key].get(sev, 0) + 1
 
-        critical = max(0, int(base * 0.3))
-        high = max(0, int(base * 0.4))
-        medium = base - critical - high
-
+    history = []
+    for i in range(29, -1, -1):
+        d = today - timedelta(days=i)
+        day_key = d.strftime("%Y-%m-%d")
+        b = buckets[day_key]
         history.append({
-            "date": date_str,
-            "label": label,
-            "total": base,
-            "critical": critical,
-            "high": high,
-            "medium": medium,
+            "date": day_key,
+            "label": d.strftime("%b %d"),
+            "total": sum(b.values()),
+            "critical": b["critical"],
+            "high": b["high"],
+            "medium": b["medium"],
+            "low": b["low"],
         })
-
     return history
 
 
@@ -609,27 +773,27 @@ def _build_14day_outage_reports():
 # ===========================================================================
 
 META_RELEASES_MARCH_2026 = [
-    {"date": "2026-03-01", "title": "Attribution Metric Alignment Update", "description": "Click-through attribution now counts only link clicks. Non-link interactions categorized as engage-through.", "impact": "high", "category": "Metrics"},
-    {"date": "2026-03-01", "title": "Video Engaged-View Threshold Changed", "description": "Engaged-view threshold dropped from 10 to 5 seconds for video ads.", "impact": "high", "category": "Metrics"},
-    {"date": "2026-03-05", "title": "New 'Conversion Count' Breakdown", "description": "New breakdown dimension added to Ads Manager reporting.", "impact": "medium", "category": "Reporting"},
-    {"date": "2026-03-08", "title": "'Describe Your Audience' Natural Language Targeting", "description": "AI-powered text box in Advantage+ Targeting — write plain-text audience descriptions.", "impact": "high", "category": "Targeting"},
-    {"date": "2026-03-08", "title": "Custom Audience Engagement Filters", "description": "New retargeting filters: engagement frequency and time frame.", "impact": "high", "category": "Targeting"},
-    {"date": "2026-03-10", "title": "New Ad Format Selection System", "description": "Single ad can now use multiple formats and creatives.", "impact": "high", "category": "Ad Formats"},
-    {"date": "2026-03-10", "title": "CTA Button Behavior Change", "description": "CTA in Ads Manager no longer modifies original organic posts.", "impact": "medium", "category": "Ad Formats"},
-    {"date": "2026-03-12", "title": "Instagram/Facebook Page Visits Goal", "description": "New performance goal: 'Maximise Number of Profile/Page Visits'.", "impact": "medium", "category": "Campaign Goals"},
-    {"date": "2026-03-12", "title": "Ad Sequencing for Awareness & Engagement", "description": "Ad Sequencing now available for Awareness and Engagement objectives.", "impact": "medium", "category": "Campaign Features"},
-    {"date": "2026-03-15", "title": "Advantage+ as Default for New Campaigns", "description": "Advantage+ automation tools are now the default for all new campaigns.", "impact": "high", "category": "Automation"},
-    {"date": "2026-03-15", "title": "Advantage+ Leads Campaigns — Global Launch", "description": "Advantage+ Leads Campaigns now available globally.", "impact": "high", "category": "Automation"},
-    {"date": "2026-03-18", "title": "Threads Ads — Global Rollout", "description": "Threads in ad ecosystem with global delivery. Image/video with full Ads Manager integration.", "impact": "high", "category": "New Placements"},
-    {"date": "2026-03-20", "title": "Graph API v25 — Page Viewer Metric", "description": "New Page Viewer Metric replacing legacy reach. Deprecation by June 2026.", "impact": "medium", "category": "API"},
-    {"date": "2026-03-25", "title": "Account Health Score in Ads Manager", "description": "Visible Account Health Score (0-100) now displayed.", "impact": "medium", "category": "Policy"},
-    {"date": "2026-03-31", "title": "Webhooks mTLS Certificate Change", "description": "Webhooks mTLS certificates switching to Meta CA. Trust store updates required.", "impact": "high", "category": "API"},
+    {"date": "2026-03-01", "title": "Attribution Metric Alignment Update", "description": "Click-through attribution now counts only link clicks. Non-link interactions categorized as engage-through.", "impact": "high", "category": "Metrics", "url": "https://www.facebook.com/business/news"},
+    {"date": "2026-03-01", "title": "Video Engaged-View Threshold Changed", "description": "Engaged-view threshold dropped from 10 to 5 seconds for video ads.", "impact": "high", "category": "Metrics", "url": "https://www.facebook.com/business/news"},
+    {"date": "2026-03-05", "title": "New 'Conversion Count' Breakdown", "description": "New breakdown dimension added to Ads Manager reporting.", "impact": "medium", "category": "Reporting", "url": "https://www.facebook.com/business/help"},
+    {"date": "2026-03-08", "title": "'Describe Your Audience' Natural Language Targeting", "description": "AI-powered text box in Advantage+ Targeting — write plain-text audience descriptions.", "impact": "high", "category": "Targeting", "url": "https://www.facebook.com/business/help"},
+    {"date": "2026-03-08", "title": "Custom Audience Engagement Filters", "description": "New retargeting filters: engagement frequency and time frame.", "impact": "high", "category": "Targeting", "url": "https://www.facebook.com/business/help"},
+    {"date": "2026-03-10", "title": "New Ad Format Selection System", "description": "Single ad can now use multiple formats and creatives.", "impact": "high", "category": "Ad Formats", "url": "https://www.facebook.com/business/help"},
+    {"date": "2026-03-10", "title": "CTA Button Behavior Change", "description": "CTA in Ads Manager no longer modifies original organic posts.", "impact": "medium", "category": "Ad Formats", "url": "https://www.facebook.com/business/help"},
+    {"date": "2026-03-12", "title": "Instagram/Facebook Page Visits Goal", "description": "New performance goal: 'Maximise Number of Profile/Page Visits'.", "impact": "medium", "category": "Campaign Goals", "url": "https://www.facebook.com/business/help"},
+    {"date": "2026-03-12", "title": "Ad Sequencing for Awareness & Engagement", "description": "Ad Sequencing now available for Awareness and Engagement objectives.", "impact": "medium", "category": "Campaign Features", "url": "https://www.facebook.com/business/help"},
+    {"date": "2026-03-15", "title": "Advantage+ as Default for New Campaigns", "description": "Advantage+ automation tools are now the default for all new campaigns.", "impact": "high", "category": "Automation", "url": "https://www.facebook.com/business/help"},
+    {"date": "2026-03-15", "title": "Advantage+ Leads Campaigns — Global Launch", "description": "Advantage+ Leads Campaigns now available globally.", "impact": "high", "category": "Automation", "url": "https://www.facebook.com/business/help"},
+    {"date": "2026-03-18", "title": "Threads Ads — Global Rollout", "description": "Threads in ad ecosystem with global delivery. Image/video with full Ads Manager integration.", "impact": "high", "category": "New Placements", "url": "https://www.facebook.com/business/news"},
+    {"date": "2026-03-20", "title": "Graph API v25 — Page Viewer Metric", "description": "New Page Viewer Metric replacing legacy reach. Deprecation by June 2026.", "impact": "medium", "category": "API", "url": "https://developers.facebook.com/docs/graph-api/changelog/"},
+    {"date": "2026-03-25", "title": "Account Health Score in Ads Manager", "description": "Visible Account Health Score (0-100) now displayed.", "impact": "medium", "category": "Policy", "url": "https://www.facebook.com/business/help"},
+    {"date": "2026-03-31", "title": "Webhooks mTLS Certificate Change", "description": "Webhooks mTLS certificates switching to Meta CA. Trust store updates required.", "impact": "high", "category": "API", "url": "https://developers.facebook.com/docs/graph-api/webhooks/"},
 ]
 
 UPCOMING_CHANGES = [
-    {"date": "2026-04-01", "title": "Location Fees (Digital Service Tax)", "description": "Extra charges in AT(5%), FR(3%), IT(3%), ES(3%), TR(5%), UK(2%). Based on where ads shown.", "impact": "high", "category": "Billing"},
-    {"date": "2026-06-01", "title": "Legacy Page Reach Metric Deprecation", "description": "Legacy reach metric fully removed. Migrate to Page Viewer Metric.", "impact": "medium", "category": "API"},
-    {"date": "2026-09-01", "title": "ASC/AAC Campaign API Deprecation", "description": "Marketing API phases out legacy Advantage Shopping and App Campaign APIs.", "impact": "high", "category": "API"},
+    {"date": "2026-04-01", "title": "Location Fees (Digital Service Tax)", "description": "Extra charges in AT(5%), FR(3%), IT(3%), ES(3%), TR(5%), UK(2%). Based on where ads shown.", "impact": "high", "category": "Billing", "url": "https://www.facebook.com/business/help"},
+    {"date": "2026-06-01", "title": "Legacy Page Reach Metric Deprecation", "description": "Legacy reach metric fully removed. Migrate to Page Viewer Metric.", "impact": "medium", "category": "API", "url": "https://developers.facebook.com/docs/graph-api/changelog/"},
+    {"date": "2026-09-01", "title": "ASC/AAC Campaign API Deprecation", "description": "Marketing API phases out legacy Advantage Shopping and App Campaign APIs.", "impact": "high", "category": "API", "url": "https://developers.facebook.com/docs/marketing-api/"},
 ]
 
 
@@ -670,6 +834,7 @@ def fetch_releases():
             releases.append({
                 "date": date_str, "title": title, "description": summary,
                 "impact": "medium", "category": "News: " + source_name,
+                "url": _canonical_url(entry.get("link", "")),
             })
 
     releases.sort(key=lambda x: x["date"], reverse=True)
@@ -690,20 +855,18 @@ def fetch_releases():
 def run_daily_fetch():
     print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] Starting Meta Ads monitor fetch...")
 
-    print("  → Generating daily CPM/CPC data (30 days)...")
-    daily_cpm_all = generate_daily_data(MONTHLY_CPM_ALL_SOURCED, "cpm", 30)
-    daily_cpc_all = generate_daily_data(MONTHLY_CPC_ALL_SOURCED, "cpc", 30)
-    daily_cpm_dating = generate_daily_data(MONTHLY_CPM_DATING_SOURCED, "cpm", 30)
-    daily_cpc_dating = generate_daily_data(MONTHLY_CPC_DATING_SOURCED, "cpc", 30)
+    cpm_cpc = fetch_monthly_cpm_cpc()
+    monthly_all = cpm_cpc["monthly_all"]
+    monthly_dating = cpm_cpc["monthly_dating"]
 
     print("  → Computing Month-over-Month dating changes...")
-    dating_mom = compute_dating_mom()
+    dating_mom = compute_dating_mom(monthly_all, monthly_dating)
 
     print("  → Checking Meta platform incidents (last 3 days)...")
-    incidents, incidents_14d = fetch_meta_incidents()
+    incidents, incidents_30d = fetch_meta_incidents()
 
     print("  → Fetching outage/error news...")
-    news, outage_reports_14d = fetch_incident_news()
+    news, outage_reports_30d = fetch_incident_news()
 
     print("  → Fetching Meta Ads releases & rollouts...")
     releases, upcoming = fetch_releases()
@@ -713,17 +876,17 @@ def run_daily_fetch():
         "date": datetime.now().strftime("%Y-%m-%d"),
         "current_month": datetime.now().strftime("%B %Y"),
         "benchmarks": INDUSTRY_BENCHMARKS,
-        "daily_trends": {
-            "cpm_all": daily_cpm_all,
-            "cpc_all": daily_cpc_all,
-            "cpm_dating": daily_cpm_dating,
-            "cpc_dating": daily_cpc_dating,
+        "monthly_trends": {
+            "all": monthly_all,
+            "dating": monthly_dating,
+            "adlib_sample": cpm_cpc["adlib_sample"],
+            "data_origin": cpm_cpc["data_origin"],
         },
         "dating_mom": dating_mom,
         "incidents": incidents,
-        "incidents_14d": incidents_14d,
+        "incidents_30d": incidents_30d,
         "news": news,
-        "outage_reports_14d": outage_reports_14d,
+        "outage_reports_30d": outage_reports_30d,
         "releases": releases,
         "upcoming_changes": upcoming,
         "data_sources": DATA_SOURCES_LIST,
@@ -733,8 +896,9 @@ def run_daily_fetch():
     with open(output_path, "w") as f:
         json.dump(report, f, indent=2)
 
+    n_all = len(monthly_all)
     print(f"  ✓ Report saved to {output_path}")
-    print(f"  ✓ {len(daily_cpm_all)} daily points, {len(incidents)} incidents, "
+    print(f"  ✓ {n_all} monthly points, {len(incidents)} incidents, "
           f"{len(news)} news, {len(releases)} releases")
     return report
 

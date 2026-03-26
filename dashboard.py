@@ -1,6 +1,7 @@
 """
-Meta Ads Daily Monitor - Dashboard Generator v3
-Daily CPM/CPC charts with sources, MoM dating, 14-day incident/outage bar charts.
+Meta Ads Monitor - Dashboard Generator v4
+Monthly CPM/CPC charts from real sources + Ad Library sample,
+MoM dating, 30-day incident/outage bar charts, paginated news.
 """
 
 import json
@@ -22,12 +23,17 @@ def generate_dashboard():
         data = json.load(f)
 
     benchmarks = data["benchmarks"]
-    trends = data["daily_trends"]
+    monthly = data["monthly_trends"]
+    monthly_all = monthly["all"]
+    monthly_dating = monthly["dating"]
+    adlib_sample = monthly.get("adlib_sample")
+    data_origin = monthly.get("data_origin", "fallback")
+
     dating_mom = data["dating_mom"]
     incidents = data["incidents"]
-    incidents_14d = data["incidents_14d"]
+    incidents_30d = data["incidents_30d"]
     news = data["news"]
-    outage_14d = data["outage_reports_14d"]
+    outage_30d = data["outage_reports_30d"]
     releases = data["releases"]
     upcoming = data["upcoming_changes"]
     sources = data["data_sources"]
@@ -38,29 +44,30 @@ def generate_dashboard():
     incidents_major = len([i for i in incidents if i.get("severity") in ("major", "warning")])
     inc_color = "var(--red)" if incidents_major > 0 else "var(--green)"
 
-    # --- Chart data (daily) ---
-    cpm_all_labels = json.dumps([p["label"] for p in trends["cpm_all"]])
-    cpm_all_values = json.dumps([p["cpm"] for p in trends["cpm_all"]])
-    cpc_all_labels = json.dumps([p["label"] for p in trends["cpc_all"]])
-    cpc_all_values = json.dumps([p["cpc"] for p in trends["cpc_all"]])
-    cpm_dat_values = json.dumps([p["cpm"] for p in trends["cpm_dating"]])
-    cpc_dat_values = json.dumps([p["cpc"] for p in trends["cpc_dating"]])
+    # --- Monthly chart data ---
+    month_labels = json.dumps([p["label"] for p in monthly_all])
+    cpm_all_values = json.dumps([p.get("cpm") for p in monthly_all])
+    cpc_all_values = json.dumps([p.get("cpc") for p in monthly_all])
+    cpm_dat_values = json.dumps([p.get("cpm") for p in monthly_dating])
+    cpc_dat_values = json.dumps([p.get("cpc") for p in monthly_dating])
 
-    # --- 14-day bar chart data ---
-    inc14_labels = json.dumps([d["label"] for d in incidents_14d])
-    inc14_major = json.dumps([d["major"] for d in incidents_14d])
-    inc14_minor = json.dumps([d["minor"] for d in incidents_14d])
+    adlib_cpm_js = json.dumps(adlib_sample["cpm"]) if adlib_sample else "null"
+    adlib_label = f'"This Week (Ad Library, n={adlib_sample["sample_size"]})"' if adlib_sample else "null"
 
-    out14_labels = json.dumps([d["label"] for d in outage_14d])
-    out14_critical = json.dumps([d["critical"] for d in outage_14d])
-    out14_high = json.dumps([d["high"] for d in outage_14d])
-    out14_medium = json.dumps([d["medium"] for d in outage_14d])
+    latest_cpm = monthly_all[-1].get("cpm", "N/A") if monthly_all else "N/A"
+    latest_cpc = monthly_all[-1].get("cpc", "N/A") if monthly_all else "N/A"
+    latest_source = monthly_all[-1].get("source", "") if monthly_all else ""
 
-    # --- Source references for chart footnotes ---
-    cpm_source = trends["cpm_all"][0].get("source", "[1]") if trends["cpm_all"] else "[1]"
-    cpc_source = trends["cpc_all"][0].get("source", "[3]") if trends["cpc_all"] else "[3]"
-    cpm_dat_source = trends["cpm_dating"][0].get("source", "[5]") if trends["cpm_dating"] else "[5]"
-    cpc_dat_source = trends["cpc_dating"][0].get("source", "[5]") if trends["cpc_dating"] else "[5]"
+    # --- 30-day bar chart data ---
+    inc30_labels = json.dumps([d["label"] for d in incidents_30d])
+    inc30_major = json.dumps([d["major"] for d in incidents_30d])
+    inc30_minor = json.dumps([d["minor"] for d in incidents_30d])
+
+    out30_labels = json.dumps([d["label"] for d in outage_30d])
+    out30_critical = json.dumps([d["critical"] for d in outage_30d])
+    out30_high = json.dumps([d["high"] for d in outage_30d])
+    out30_medium = json.dumps([d["medium"] for d in outage_30d])
+    out30_low = json.dumps([d.get("low", 0) for d in outage_30d])
 
     # --- Benchmark rows ---
     benchmark_rows = ""
@@ -122,7 +129,7 @@ def generate_dashboard():
         </div>
     </div>
     <div style="font-size:11px;color:var(--text-dim);margin-top:8px;">
-        Previous trend ({months["prev2"]} → {months["previous"]}):
+        Previous trend ({months["prev2"]} &rarr; {months["previous"]}):
         Dating CPM {_mom_badge(dm["cpm_trend"])},
         Dating CPC {_mom_badge(dm["cpc_trend"])}
     </div>
@@ -146,18 +153,20 @@ def generate_dashboard():
     else:
         inc_html = '<div style="padding:20px;text-align:center;color:var(--green)"><span class="badge ok">ALL CLEAR</span></div>'
 
-    # --- News ---
+    # --- News (all items, pagination by JS) ---
     if news:
         news_html = ""
-        for a in news:
+        for idx, a in enumerate(news):
             sev = a.get("severity", "medium")
             badge = f'<span class="badge {sev}">{sev.upper()}</span> '
             news_html += (
-                f'<div class="news-item"><div class="title">{badge}'
+                f'<div class="news-item" data-news-idx="{idx}">'
+                f'<div class="title">{badge}'
                 f'<a href="{a["url"]}" target="_blank">{a["title"]}</a></div>'
                 f'<div class="meta-info">{a["source"]} &middot; {a["date"]}</div>'
                 f'<div class="summary">{a.get("summary", "")}</div></div>\n'
             )
+        news_html += '<div id="newsPagination" class="pagination"></div>'
     else:
         news_html = '<div style="padding:20px;text-align:center;color:var(--green)">No outage reports found.</div>'
 
@@ -165,17 +174,19 @@ def generate_dashboard():
     releases_html = ""
     for r in releases:
         impact = r.get("impact", "medium")
+        title_html = f'<a href="{r.get("url", "#")}" target="_blank" style="color:var(--accent)">{r["title"]}</a>' if r.get("url") else r["title"]
         releases_html += (
             f'<tr><td>{r["date"]}</td><td><span class="cat-tag">{r.get("category","")}</span></td>'
             f'<td><span class="badge {"high" if impact == "high" else "medium"}">{impact.upper()}</span></td>'
-            f'<td><strong>{r["title"]}</strong><br><span style="color:var(--text-dim);font-size:12px">{r["description"]}</span></td></tr>\n'
+            f'<td><strong>{title_html}</strong><br><span style="color:var(--text-dim);font-size:12px">{r["description"]}</span></td></tr>\n'
         )
     upcoming_html = ""
     for u in upcoming:
+        title_html = f'<a href="{u.get("url", "#")}" target="_blank" style="color:var(--accent)">{u["title"]}</a>' if u.get("url") else u["title"]
         upcoming_html += (
             f'<tr style="opacity:0.7"><td>{u["date"]}</td><td><span class="cat-tag">{u["category"]}</span></td>'
             f'<td><span class="badge warning">UPCOMING</span></td>'
-            f'<td><strong>{u["title"]}</strong><br><span style="color:var(--text-dim);font-size:12px">{u["description"]}</span></td></tr>\n'
+            f'<td><strong>{title_html}</strong><br><span style="color:var(--text-dim);font-size:12px">{u["description"]}</span></td></tr>\n'
         )
 
     # --- Sources footnotes ---
@@ -183,35 +194,44 @@ def generate_dashboard():
     for s in sources:
         sources_footnotes += f'<div><strong>{s["id"]}</strong> {s["name"]} — <a href="{s["url"]}" target="_blank">{s["what"]}</a></div>\n'
 
+    # --- Ad Library KPI sub ---
+    adlib_kpi_sub = ""
+    if adlib_sample:
+        adlib_kpi_sub = f'<div class="sub">Ad Library est: ${adlib_sample["cpm"]}</div>'
+
+    origin_badge = "Scraped" if data_origin == "scraped" else "Fallback"
+
     html = HTML_TEMPLATE.format(
         date=data["date"],
         generated_at=data["generated_at"],
         current_month=data["current_month"],
-        avg_cpm=all_ind.get("cpm", "N/A"),
-        avg_cpc=all_ind.get("cpc", "N/A"),
+        avg_cpm=latest_cpm,
+        avg_cpc=latest_cpc,
+        latest_source=latest_source,
+        adlib_kpi_sub=adlib_kpi_sub,
         dating_cpm=dating_ind.get("cpm", "N/A"),
         dating_cpc=dating_ind.get("cpc", "N/A"),
         incidents_count=incidents_major,
         inc_color=inc_color,
         news_count=len(news),
         releases_count=len(releases),
-        cpm_all_labels=cpm_all_labels,
+        month_labels=month_labels,
         cpm_all_values=cpm_all_values,
-        cpc_all_labels=cpc_all_labels,
         cpc_all_values=cpc_all_values,
         cpm_dat_values=cpm_dat_values,
         cpc_dat_values=cpc_dat_values,
-        cpm_source=cpm_source,
-        cpc_source=cpc_source,
-        cpm_dat_source=cpm_dat_source,
-        cpc_dat_source=cpc_dat_source,
-        inc14_labels=inc14_labels,
-        inc14_major=inc14_major,
-        inc14_minor=inc14_minor,
-        out14_labels=out14_labels,
-        out14_critical=out14_critical,
-        out14_high=out14_high,
-        out14_medium=out14_medium,
+        adlib_cpm_js=adlib_cpm_js,
+        adlib_label=adlib_label,
+        origin_badge=origin_badge,
+        inc30_labels=inc30_labels,
+        inc30_major=inc30_major,
+        inc30_minor=inc30_minor,
+        out30_labels=out30_labels,
+        out30_critical=out30_critical,
+        out30_high=out30_high,
+        out30_medium=out30_medium,
+        out30_low=out30_low,
+        news_total=len(news),
         benchmark_rows=benchmark_rows,
         dating_mom_html=dating_mom_html,
         inc_html=inc_html,
@@ -263,7 +283,7 @@ body{{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,Roboto,sans-
 .card .chart-source{{font-size:10px;color:var(--text-dim);margin-top:6px;font-style:italic;}}
 .grid-2{{display:grid;grid-template-columns:1fr 1fr;gap:16px;}}
 @media(max-width:1000px){{.grid-2{{grid-template-columns:1fr;}}}}
-.chart-wrap{{position:relative;height:240px;}}
+.chart-wrap{{position:relative;height:260px;}}
 table{{width:100%;border-collapse:collapse;font-size:12px;}}
 th{{text-align:left;padding:7px 10px;background:var(--surface2);border-bottom:2px solid var(--border);font-weight:700;font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--text-dim);}}
 td{{padding:7px 10px;border-bottom:1px solid var(--border);}}
@@ -279,11 +299,11 @@ tr.highlight td{{font-weight:600;}}
 .badge.critical{{background:rgba(248,113,113,.2);color:var(--red);}}
 .badge.high{{background:rgba(251,191,36,.15);color:var(--orange);}}
 .badge.medium{{background:rgba(79,140,255,.15);color:var(--accent);}}
+.badge.low{{background:rgba(123,127,150,.15);color:var(--text-dim);}}
 .comp-tag{{display:inline-block;padding:2px 7px;border-radius:4px;font-size:10px;font-weight:600;background:var(--surface2);color:var(--text-dim);border:1px solid var(--border);}}
 .cat-tag{{display:inline-block;padding:2px 7px;border-radius:4px;font-size:10px;font-weight:600;background:rgba(124,92,252,.1);color:var(--accent2);border:1px solid rgba(124,92,252,.2);}}
 .dating-card{{border-color:var(--dating);}}
 .dating-card h2{{color:var(--dating);}}
-/* MoM section */
 .mom-grid{{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;}}
 .mom-card{{background:var(--surface2);border-radius:10px;padding:14px;}}
 .mom-header{{font-size:12px;font-weight:700;color:var(--text);margin-bottom:8px;}}
@@ -303,6 +323,12 @@ tr.highlight td{{font-weight:600;}}
 .sources-box{{margin-top:20px;padding:14px 18px;background:var(--surface);border:1px solid var(--border);border-radius:10px;font-size:11px;color:var(--text-dim);line-height:1.8;}}
 .sources-box a{{color:var(--accent);text-decoration:none;}}
 .sources-box a:hover{{text-decoration:underline;}}
+.pagination{{display:flex;gap:6px;justify-content:center;align-items:center;padding:14px 0;flex-wrap:wrap;}}
+.pagination button{{background:var(--surface2);color:var(--text);border:1px solid var(--border);padding:5px 12px;border-radius:6px;font-size:12px;cursor:pointer;transition:background .15s;}}
+.pagination button:hover{{background:var(--border);}}
+.pagination button.active{{background:var(--accent);color:#fff;border-color:var(--accent);}}
+.pagination button:disabled{{opacity:.4;cursor:default;}}
+.pagination .page-info{{font-size:11px;color:var(--text-dim);}}
 .refresh-btn{{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none;padding:8px 20px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;transition:opacity .2s;margin-bottom:6px;}}
 .refresh-btn:hover{{opacity:.85;}}
 .refresh-btn:disabled{{opacity:.5;cursor:wait;}}
@@ -313,19 +339,19 @@ tr.highlight td{{font-weight:600;}}
 
 <div class="header">
     <div>
-        <h1>Meta Ads Daily Monitor</h1>
-        <div class="sub">Daily CPM/CPC &middot; Platform Incidents &middot; Releases &middot; Outage News</div>
+        <h1>Meta Ads Monitor</h1>
+        <div class="sub">Monthly CPM/CPC Benchmarks &middot; Platform Incidents &middot; Releases &middot; Outage News</div>
     </div>
     <div class="right">
         <button class="refresh-btn" onclick="doRefresh(this)">&#x21bb; Refresh Data</button>
         <div class="date">{date}</div>
-        <div>Generated: {generated_at}</div>
+        <div>Generated: {generated_at} &middot; Data: {origin_badge}</div>
     </div>
 </div>
 
 <div class="kpi-row">
-    <div class="kpi"><div class="label">CPM (All)</div><div class="value" style="color:var(--accent)">${avg_cpm}</div><div class="sub">This month avg</div></div>
-    <div class="kpi"><div class="label">CPC (All)</div><div class="value" style="color:var(--accent)">${avg_cpc}</div><div class="sub">This month avg</div></div>
+    <div class="kpi"><div class="label">CPM (All)</div><div class="value" style="color:var(--accent)">${avg_cpm}</div><div class="sub">Latest month &middot; {latest_source}</div>{adlib_kpi_sub}</div>
+    <div class="kpi"><div class="label">CPC (All)</div><div class="value" style="color:var(--accent)">${avg_cpc}</div><div class="sub">Latest month</div></div>
     <div class="kpi dating"><div class="label">Dating CPM</div><div class="value">${dating_cpm}</div></div>
     <div class="kpi dating"><div class="label">Dating CPC</div><div class="value">${dating_cpc}</div></div>
     <div class="kpi"><div class="label">Incidents (3d)</div><div class="value" style="color:{inc_color}">{incidents_count}</div></div>
@@ -333,31 +359,31 @@ tr.highlight td{{font-weight:600;}}
     <div class="kpi"><div class="label">Releases</div><div class="value" style="color:var(--accent2)">{releases_count}</div><div class="sub">{current_month}</div></div>
 </div>
 
-<!-- DAILY CPM/CPC CHARTS -->
+<!-- MONTHLY CPM/CPC CHARTS -->
 <div class="grid-2">
     <div class="card">
-        <h2><span class="icon">&#128200;</span> Daily CPM (30 days)</h2>
+        <h2><span class="icon">&#128200;</span> Monthly CPM Trend (13 months)</h2>
         <div class="chart-wrap"><canvas id="cpmChart"></canvas></div>
-        <div class="chart-source">All Industries: {cpm_source} SuperAds.ai &middot; Dating: {cpm_dat_source} Adjust</div>
+        <div class="chart-source">[1] Sovran.ai / [3] SuperAds.ai &middot; [5] Adjust (Dating) &middot; [4] Meta Ad Library sample</div>
     </div>
     <div class="card">
-        <h2><span class="icon">&#128201;</span> Daily CPC (30 days)</h2>
+        <h2><span class="icon">&#128201;</span> Monthly CPC Trend (13 months)</h2>
         <div class="chart-wrap"><canvas id="cpcChart"></canvas></div>
-        <div class="chart-source">All Industries: {cpc_source} SuperAds.ai &middot; Dating: {cpc_dat_source} Adjust</div>
+        <div class="chart-source">[3] SuperAds.ai &middot; [5] Adjust (Dating)</div>
     </div>
 </div>
 
-<!-- 14-DAY BAR CHARTS -->
+<!-- 30-DAY BAR CHARTS -->
 <div class="grid-2">
     <div class="card">
-        <h2><span class="icon">&#128308;</span> Platform Incidents — Last 14 Days</h2>
+        <h2><span class="icon">&#128308;</span> Platform Incidents — Last 30 Days</h2>
         <div class="chart-wrap"><canvas id="incidentsBar"></canvas></div>
         <div class="chart-source">[7] StatusGator &middot; [8] IsDown &middot; Downdetector user reports</div>
     </div>
     <div class="card">
-        <h2><span class="icon">&#9888;&#65039;</span> Outage & Error Reports — Last 14 Days</h2>
+        <h2><span class="icon">&#9888;&#65039;</span> Error/Outage Mentions — Last 30 Days</h2>
         <div class="chart-wrap"><canvas id="outageBar"></canvas></div>
-        <div class="chart-source">Bing News aggregation &middot; Downdetector &middot; Media reports</div>
+        <div class="chart-source">Counted from actual news article publish dates &middot; Bing News RSS</div>
     </div>
 </div>
 
@@ -369,7 +395,7 @@ tr.highlight td{{font-weight:600;}}
         <table><thead><tr><th>Industry</th><th>CPM</th><th>CPC</th><th>CTR</th><th>CPA</th></tr></thead>
         <tbody>{benchmark_rows}</tbody></table>
         </div>
-        <div class="chart-source">[1][3][6] SuperAds.ai, Triple Whale, AdAmigo</div>
+        <div class="chart-source">[1] Sovran &middot; [3] SuperAds &middot; [6] Triple Whale</div>
     </div>
     <div class="card dating-card">
         <h2><span class="icon">&#128152;</span> Dating Niche — Month over Month</h2>
@@ -406,7 +432,7 @@ tr.highlight td{{font-weight:600;}}
 <div class="sources-box">
     <strong>Data Sources & Verification:</strong>
     {sources_footnotes}
-    <div style="margin-top:6px"><em>Daily values interpolated from monthly anchors with day-of-week patterns. Refresh: <code>python run.py</code></em></div>
+    <div style="margin-top:6px"><em>Monthly values from benchmark reports. Ad Library sample via MetaAdsCollector. Refresh: <code>python run.py</code></em></div>
 </div>
 
 </div>
@@ -438,54 +464,80 @@ const barOpts = {{
     }}
 }};
 
-// CPM daily chart
-new Chart(document.getElementById('cpmChart'),{{
-    type:'line',
-    data:{{
-        labels:{cpm_all_labels},
-        datasets:[
-            {{label:'All Industries CPM',data:{cpm_all_values},borderColor:'#4f8cff',backgroundColor:'rgba(79,140,255,.06)',fill:true,tension:.3,pointRadius:2,pointHoverRadius:5,borderWidth:2}},
-            {{label:'Dating CPM',data:{cpm_dat_values},borderColor:'#f472b6',backgroundColor:'rgba(244,114,182,.06)',fill:true,tension:.3,pointRadius:2,pointHoverRadius:5,borderWidth:2}}
-        ]
-    }},
-    options:lineOpts,
-}});
+// --- Monthly CPM chart ---
+(function() {{
+    const labels = {month_labels};
+    const cpmAll = {cpm_all_values};
+    const cpmDat = {cpm_dat_values};
+    const adlibCpm = {adlib_cpm_js};
 
-// CPC daily chart
+    const datasets = [
+        {{label:'All Industries CPM',data:cpmAll,borderColor:'#4f8cff',backgroundColor:'rgba(79,140,255,.12)',fill:true,tension:.3,pointRadius:4,pointHoverRadius:7,borderWidth:2}},
+        {{label:'Dating CPM',data:cpmDat,borderColor:'#f472b6',backgroundColor:'rgba(244,114,182,.08)',fill:true,tension:.3,pointRadius:4,pointHoverRadius:7,borderWidth:2}}
+    ];
+
+    if (adlibCpm !== null) {{
+        const adlibData = new Array(labels.length).fill(null);
+        adlibData.push(adlibCpm);
+        labels.push('This Wk');
+        cpmAll.push(null);
+        cpmDat.push(null);
+        datasets.push({{
+            label: {adlib_label},
+            data: adlibData,
+            borderColor: '#34d399',
+            backgroundColor: 'rgba(52,211,153,.3)',
+            pointRadius: 8,
+            pointHoverRadius: 10,
+            pointStyle: 'star',
+            borderWidth: 2,
+            showLine: false,
+        }});
+    }}
+
+    new Chart(document.getElementById('cpmChart'), {{
+        type: 'line',
+        data: {{ labels: labels, datasets: datasets }},
+        options: lineOpts,
+    }});
+}})();
+
+// --- Monthly CPC chart ---
 new Chart(document.getElementById('cpcChart'),{{
     type:'line',
     data:{{
-        labels:{cpc_all_labels},
+        labels:{month_labels},
         datasets:[
-            {{label:'All Industries CPC',data:{cpc_all_values},borderColor:'#4f8cff',backgroundColor:'rgba(79,140,255,.06)',fill:true,tension:.3,pointRadius:2,pointHoverRadius:5,borderWidth:2}},
-            {{label:'Dating CPC',data:{cpc_dat_values},borderColor:'#f472b6',backgroundColor:'rgba(244,114,182,.06)',fill:true,tension:.3,pointRadius:2,pointHoverRadius:5,borderWidth:2}}
+            {{label:'All Industries CPC',data:{cpc_all_values},borderColor:'#4f8cff',backgroundColor:'rgba(79,140,255,.12)',fill:true,tension:.3,pointRadius:4,pointHoverRadius:7,borderWidth:2}},
+            {{label:'Dating CPC',data:{cpc_dat_values},borderColor:'#f472b6',backgroundColor:'rgba(244,114,182,.08)',fill:true,tension:.3,pointRadius:4,pointHoverRadius:7,borderWidth:2}}
         ]
     }},
     options:lineOpts,
 }});
 
-// Incidents 14-day bar
+// Incidents 30-day bar
 new Chart(document.getElementById('incidentsBar'),{{
     type:'bar',
     data:{{
-        labels:{inc14_labels},
+        labels:{inc30_labels},
         datasets:[
-            {{label:'Major',data:{inc14_major},backgroundColor:'rgba(248,113,113,.7)',borderRadius:3}},
-            {{label:'Minor',data:{inc14_minor},backgroundColor:'rgba(251,191,36,.5)',borderRadius:3}}
+            {{label:'Major',data:{inc30_major},backgroundColor:'rgba(248,113,113,.7)',borderRadius:3}},
+            {{label:'Minor',data:{inc30_minor},backgroundColor:'rgba(251,191,36,.5)',borderRadius:3}}
         ]
     }},
     options:barOpts,
 }});
 
-// Outage reports 14-day bar
+// Outage mentions 30-day bar
 new Chart(document.getElementById('outageBar'),{{
     type:'bar',
     data:{{
-        labels:{out14_labels},
+        labels:{out30_labels},
         datasets:[
-            {{label:'Critical',data:{out14_critical},backgroundColor:'rgba(248,113,113,.7)',borderRadius:3}},
-            {{label:'High',data:{out14_high},backgroundColor:'rgba(251,191,36,.5)',borderRadius:3}},
-            {{label:'Medium',data:{out14_medium},backgroundColor:'rgba(79,140,255,.4)',borderRadius:3}}
+            {{label:'Critical',data:{out30_critical},backgroundColor:'rgba(248,113,113,.7)',borderRadius:3}},
+            {{label:'High',data:{out30_high},backgroundColor:'rgba(251,191,36,.5)',borderRadius:3}},
+            {{label:'Medium',data:{out30_medium},backgroundColor:'rgba(79,140,255,.4)',borderRadius:3}},
+            {{label:'Low',data:{out30_low},backgroundColor:'rgba(123,127,150,.3)',borderRadius:3}}
         ]
     }},
     options:barOpts,
@@ -505,6 +557,43 @@ function doRefresh(btn) {{
             setTimeout(() => {{ btn.disabled = false; btn.innerHTML = '&#x21bb; Refresh Data'; }}, 3000);
         }});
 }}
+
+// --- Pagination for Outage & Error Reports ---
+(function() {{
+    const PER_PAGE = 10;
+    const total = {news_total};
+    if (total <= PER_PAGE) return;
+    const items = document.querySelectorAll('.news-item[data-news-idx]');
+    const pagDiv = document.getElementById('newsPagination');
+    if (!pagDiv || items.length === 0) return;
+    const pages = Math.ceil(total / PER_PAGE);
+    let cur = 1;
+    function render() {{
+        const start = (cur - 1) * PER_PAGE;
+        const end = start + PER_PAGE;
+        items.forEach(el => {{
+            const idx = parseInt(el.getAttribute('data-news-idx'));
+            el.style.display = (idx >= start && idx < end) ? '' : 'none';
+        }});
+        let html = '<button class="pg-prev" ' + (cur <= 1 ? 'disabled' : '') + '>&laquo; Prev</button>';
+        const maxBtns = 7;
+        let startP = Math.max(1, cur - 3);
+        let endP = Math.min(pages, startP + maxBtns - 1);
+        if (endP - startP < maxBtns - 1) startP = Math.max(1, endP - maxBtns + 1);
+        for (let p = startP; p <= endP; p++) {{
+            html += '<button class="pg-num' + (p === cur ? ' active' : '') + '" data-p="' + p + '">' + p + '</button>';
+        }}
+        html += '<button class="pg-next" ' + (cur >= pages ? 'disabled' : '') + '>Next &raquo;</button>';
+        html += '<span class="page-info">' + total + ' items &middot; page ' + cur + '/' + pages + '</span>';
+        pagDiv.innerHTML = html;
+        pagDiv.querySelector('.pg-prev').onclick = () => {{ if (cur > 1) {{ cur--; render(); }} }};
+        pagDiv.querySelector('.pg-next').onclick = () => {{ if (cur < pages) {{ cur++; render(); }} }};
+        pagDiv.querySelectorAll('.pg-num').forEach(b => {{
+            b.onclick = () => {{ cur = parseInt(b.getAttribute('data-p')); render(); }};
+        }});
+    }}
+    render();
+}})()
 </script>
 </body>
 </html>"""

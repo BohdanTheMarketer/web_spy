@@ -1,0 +1,1504 @@
+{
+  "generated_at": "2026-03-26 13:18:23",
+  "date": "2026-03-26",
+  "current_month": "March 2026",
+  "benchmarks": {
+    "All Industries (Average)": {
+      "cpm": 17.5,
+      "cpc": 0.98,
+      "ctr": 2.19,
+      "cpa": 38.17
+    },
+    "Dating & Personals": {
+      "cpm": 7.54,
+      "cpc": 0.42,
+      "ctr": 1.6,
+      "cpa": 12.5
+    },
+    "E-commerce / Retail": {
+      "cpm": 11.2,
+      "cpc": 0.97,
+      "ctr": 1.59,
+      "cpa": 33.44
+    },
+    "Finance & Insurance": {
+      "cpm": 14.8,
+      "cpc": 3.77,
+      "ctr": 0.56,
+      "cpa": 41.43
+    },
+    "Technology": {
+      "cpm": 12.3,
+      "cpc": 1.27,
+      "ctr": 1.04,
+      "cpa": 55.21
+    },
+    "Health & Beauty": {
+      "cpm": 12.46,
+      "cpc": 1.85,
+      "ctr": 1.02,
+      "cpa": 38.33
+    },
+    "Education": {
+      "cpm": 10.8,
+      "cpc": 1.06,
+      "ctr": 0.73,
+      "cpa": 31.0
+    },
+    "Real Estate": {
+      "cpm": 11.0,
+      "cpc": 1.81,
+      "ctr": 0.99,
+      "cpa": 44.12
+    },
+    "Automotive": {
+      "cpm": 10.01,
+      "cpc": 2.24,
+      "ctr": 0.8,
+      "cpa": 43.84
+    },
+    "Travel & Hospitality": {
+      "cpm": 9.5,
+      "cpc": 0.63,
+      "ctr": 0.9,
+      "cpa": 48.37
+    },
+    "Gaming": {
+      "cpm": 9.8,
+      "cpc": 0.49,
+      "ctr": 1.85,
+      "cpa": 18.71
+    },
+    "Food & Beverage": {
+      "cpm": 8.9,
+      "cpc": 0.42,
+      "ctr": 1.2,
+      "cpa": 29.99
+    },
+    "Fitness": {
+      "cpm": 10.5,
+      "cpc": 1.9,
+      "ctr": 1.01,
+      "cpa": 34.5
+    },
+    "Legal": {
+      "cpm": 13.5,
+      "cpc": 1.32,
+      "ctr": 1.61,
+      "cpa": 78.64
+    },
+    "B2B / SaaS": {
+      "cpm": 15.2,
+      "cpc": 2.52,
+      "ctr": 0.78,
+      "cpa": 65.8
+    },
+    "Entertainment": {
+      "cpm": 7.8,
+      "cpc": 0.32,
+      "ctr": 1.55,
+      "cpa": 15.4
+    }
+  },
+  "daily_trends": {
+    "cpm_all": [
+      {
+        "date": "2026-02-25",
+        "label": "Feb 25",
+        "cpm": 17.1,
+        "source": "[2]"
+      },
+      {
+        "date": "2026-02-26",
+        "label": "Feb 26",
+        "cpm": 16.11,
+        "source": "[2]"
+      },
+      {
+        "date": "2026-02-27",
+        "label": "Feb 27",
+        "cpm": 16.96,
+        "source": "[2]"
+      },
+      {
+        "date": "2026-02-28",
+        "label": "Feb 28",
+        "cpm": 16.31,
+        "source": "[2]"
+      },
+      {
+        "date": "2026-03-01",
+        "label": "Mar 01",
+        "cpm": 15.45,
+        "source": "[2]"
+      },
+      {
+        "date": "2026-03-02",
+        "label": "Mar 02",
+        "cpm": 16.52,
+        "source": "[2]"
+      },
+      {
+        "date": "2026-03-03",
+        "label": "Mar 03",
+        "cpm": 17.17,
+        "source": "[2]"
+      },
+      {
+        "date": "2026-03-04",
+        "label": "Mar 04",
+        "cpm": 17.71,
+        "source": "[2]"
+      },
+      {
+        "date": "2026-03-05",
+        "label": "Mar 05",
+        "cpm": 17.56,
+        "source": "[2]"
+      },
+      {
+        "date": "2026-03-06",
+        "label": "Mar 06",
+        "cpm": 17.69,
+        "source": "[2]"
+      },
+      {
+        "date": "2026-03-07",
+        "label": "Mar 07",
+        "cpm": 15.79,
+        "source": "[2]"
+      },
+      {
+        "date": "2026-03-08",
+        "label": "Mar 08",
+        "cpm": 16.64,
+        "source": "[2]"
+      },
+      {
+        "date": "2026-03-09",
+        "label": "Mar 09",
+        "cpm": 17.73,
+        "source": "[2]"
+      },
+      {
+        "date": "2026-03-10",
+        "label": "Mar 10",
+        "cpm": 17.29,
+        "source": "[2]"
+      },
+      {
+        "date": "2026-03-11",
+        "label": "Mar 11",
+        "cpm": 17.95,
+        "source": "[2]"
+      },
+      {
+        "date": "2026-03-12",
+        "label": "Mar 12",
+        "cpm": 17.86,
+        "source": "[2]"
+      },
+      {
+        "date": "2026-03-13",
+        "label": "Mar 13",
+        "cpm": 17.85,
+        "source": "[2]"
+      },
+      {
+        "date": "2026-03-14",
+        "label": "Mar 14",
+        "cpm": 16.35,
+        "source": "[2]"
+      },
+      {
+        "date": "2026-03-15",
+        "label": "Mar 15",
+        "cpm": 16.36,
+        "source": "[2]"
+      },
+      {
+        "date": "2026-03-16",
+        "label": "Mar 16",
+        "cpm": 17.71,
+        "source": "[2]"
+      },
+      {
+        "date": "2026-03-17",
+        "label": "Mar 17",
+        "cpm": 17.31,
+        "source": "[2]"
+      },
+      {
+        "date": "2026-03-18",
+        "label": "Mar 18",
+        "cpm": 17.69,
+        "source": "[2]"
+      },
+      {
+        "date": "2026-03-19",
+        "label": "Mar 19",
+        "cpm": 17.76,
+        "source": "[2]"
+      },
+      {
+        "date": "2026-03-20",
+        "label": "Mar 20",
+        "cpm": 17.07,
+        "source": "[2]"
+      },
+      {
+        "date": "2026-03-21",
+        "label": "Mar 21",
+        "cpm": 17.13,
+        "source": "[2]"
+      },
+      {
+        "date": "2026-03-22",
+        "label": "Mar 22",
+        "cpm": 15.76,
+        "source": "[2]"
+      },
+      {
+        "date": "2026-03-23",
+        "label": "Mar 23",
+        "cpm": 17.12,
+        "source": "[2]"
+      },
+      {
+        "date": "2026-03-24",
+        "label": "Mar 24",
+        "cpm": 16.93,
+        "source": "[2]"
+      },
+      {
+        "date": "2026-03-25",
+        "label": "Mar 25",
+        "cpm": 16.97,
+        "source": "[2]"
+      },
+      {
+        "date": "2026-03-26",
+        "label": "Mar 26",
+        "cpm": 18.14,
+        "source": "[2]"
+      }
+    ],
+    "cpc_all": [
+      {
+        "date": "2026-02-25",
+        "label": "Feb 25",
+        "cpc": 0.93,
+        "source": "[4]"
+      },
+      {
+        "date": "2026-02-26",
+        "label": "Feb 26",
+        "cpc": 0.92,
+        "source": "[4]"
+      },
+      {
+        "date": "2026-02-27",
+        "label": "Feb 27",
+        "cpc": 0.91,
+        "source": "[4]"
+      },
+      {
+        "date": "2026-02-28",
+        "label": "Feb 28",
+        "cpc": 0.88,
+        "source": "[4]"
+      },
+      {
+        "date": "2026-03-01",
+        "label": "Mar 01",
+        "cpc": 0.92,
+        "source": "[4]"
+      },
+      {
+        "date": "2026-03-02",
+        "label": "Mar 02",
+        "cpc": 0.98,
+        "source": "[4]"
+      },
+      {
+        "date": "2026-03-03",
+        "label": "Mar 03",
+        "cpc": 0.95,
+        "source": "[4]"
+      },
+      {
+        "date": "2026-03-04",
+        "label": "Mar 04",
+        "cpc": 0.96,
+        "source": "[4]"
+      },
+      {
+        "date": "2026-03-05",
+        "label": "Mar 05",
+        "cpc": 0.95,
+        "source": "[4]"
+      },
+      {
+        "date": "2026-03-06",
+        "label": "Mar 06",
+        "cpc": 0.99,
+        "source": "[4]"
+      },
+      {
+        "date": "2026-03-07",
+        "label": "Mar 07",
+        "cpc": 0.92,
+        "source": "[4]"
+      },
+      {
+        "date": "2026-03-08",
+        "label": "Mar 08",
+        "cpc": 0.88,
+        "source": "[4]"
+      },
+      {
+        "date": "2026-03-09",
+        "label": "Mar 09",
+        "cpc": 0.94,
+        "source": "[4]"
+      },
+      {
+        "date": "2026-03-10",
+        "label": "Mar 10",
+        "cpc": 0.95,
+        "source": "[4]"
+      },
+      {
+        "date": "2026-03-11",
+        "label": "Mar 11",
+        "cpc": 1.0,
+        "source": "[4]"
+      },
+      {
+        "date": "2026-03-12",
+        "label": "Mar 12",
+        "cpc": 0.96,
+        "source": "[4]"
+      },
+      {
+        "date": "2026-03-13",
+        "label": "Mar 13",
+        "cpc": 1.0,
+        "source": "[4]"
+      },
+      {
+        "date": "2026-03-14",
+        "label": "Mar 14",
+        "cpc": 0.93,
+        "source": "[4]"
+      },
+      {
+        "date": "2026-03-15",
+        "label": "Mar 15",
+        "cpc": 0.92,
+        "source": "[4]"
+      },
+      {
+        "date": "2026-03-16",
+        "label": "Mar 16",
+        "cpc": 0.97,
+        "source": "[4]"
+      },
+      {
+        "date": "2026-03-17",
+        "label": "Mar 17",
+        "cpc": 0.99,
+        "source": "[4]"
+      },
+      {
+        "date": "2026-03-18",
+        "label": "Mar 18",
+        "cpc": 0.96,
+        "source": "[4]"
+      },
+      {
+        "date": "2026-03-19",
+        "label": "Mar 19",
+        "cpc": 0.98,
+        "source": "[4]"
+      },
+      {
+        "date": "2026-03-20",
+        "label": "Mar 20",
+        "cpc": 1.0,
+        "source": "[4]"
+      },
+      {
+        "date": "2026-03-21",
+        "label": "Mar 21",
+        "cpc": 0.94,
+        "source": "[4]"
+      },
+      {
+        "date": "2026-03-22",
+        "label": "Mar 22",
+        "cpc": 0.92,
+        "source": "[4]"
+      },
+      {
+        "date": "2026-03-23",
+        "label": "Mar 23",
+        "cpc": 0.98,
+        "source": "[4]"
+      },
+      {
+        "date": "2026-03-24",
+        "label": "Mar 24",
+        "cpc": 1.0,
+        "source": "[4]"
+      },
+      {
+        "date": "2026-03-25",
+        "label": "Mar 25",
+        "cpc": 0.95,
+        "source": "[4]"
+      },
+      {
+        "date": "2026-03-26",
+        "label": "Mar 26",
+        "cpc": 0.97,
+        "source": "[4]"
+      }
+    ],
+    "cpm_dating": [
+      {
+        "date": "2026-02-25",
+        "label": "Feb 25",
+        "cpm": 8.24,
+        "source": "[5]"
+      },
+      {
+        "date": "2026-02-26",
+        "label": "Feb 26",
+        "cpm": 7.77,
+        "source": "[5]"
+      },
+      {
+        "date": "2026-02-27",
+        "label": "Feb 27",
+        "cpm": 8.17,
+        "source": "[5]"
+      },
+      {
+        "date": "2026-02-28",
+        "label": "Feb 28",
+        "cpm": 7.87,
+        "source": "[5]"
+      },
+      {
+        "date": "2026-03-01",
+        "label": "Mar 01",
+        "cpm": 6.66,
+        "source": "[5]"
+      },
+      {
+        "date": "2026-03-02",
+        "label": "Mar 02",
+        "cpm": 7.12,
+        "source": "[5]"
+      },
+      {
+        "date": "2026-03-03",
+        "label": "Mar 03",
+        "cpm": 7.4,
+        "source": "[5]"
+      },
+      {
+        "date": "2026-03-04",
+        "label": "Mar 04",
+        "cpm": 7.63,
+        "source": "[5]"
+      },
+      {
+        "date": "2026-03-05",
+        "label": "Mar 05",
+        "cpm": 7.57,
+        "source": "[5]"
+      },
+      {
+        "date": "2026-03-06",
+        "label": "Mar 06",
+        "cpm": 7.62,
+        "source": "[5]"
+      },
+      {
+        "date": "2026-03-07",
+        "label": "Mar 07",
+        "cpm": 6.8,
+        "source": "[5]"
+      },
+      {
+        "date": "2026-03-08",
+        "label": "Mar 08",
+        "cpm": 7.17,
+        "source": "[5]"
+      },
+      {
+        "date": "2026-03-09",
+        "label": "Mar 09",
+        "cpm": 7.64,
+        "source": "[5]"
+      },
+      {
+        "date": "2026-03-10",
+        "label": "Mar 10",
+        "cpm": 7.45,
+        "source": "[5]"
+      },
+      {
+        "date": "2026-03-11",
+        "label": "Mar 11",
+        "cpm": 7.74,
+        "source": "[5]"
+      },
+      {
+        "date": "2026-03-12",
+        "label": "Mar 12",
+        "cpm": 7.7,
+        "source": "[5]"
+      },
+      {
+        "date": "2026-03-13",
+        "label": "Mar 13",
+        "cpm": 7.69,
+        "source": "[5]"
+      },
+      {
+        "date": "2026-03-14",
+        "label": "Mar 14",
+        "cpm": 7.04,
+        "source": "[5]"
+      },
+      {
+        "date": "2026-03-15",
+        "label": "Mar 15",
+        "cpm": 7.05,
+        "source": "[5]"
+      },
+      {
+        "date": "2026-03-16",
+        "label": "Mar 16",
+        "cpm": 7.63,
+        "source": "[5]"
+      },
+      {
+        "date": "2026-03-17",
+        "label": "Mar 17",
+        "cpm": 7.46,
+        "source": "[5]"
+      },
+      {
+        "date": "2026-03-18",
+        "label": "Mar 18",
+        "cpm": 7.62,
+        "source": "[5]"
+      },
+      {
+        "date": "2026-03-19",
+        "label": "Mar 19",
+        "cpm": 7.65,
+        "source": "[5]"
+      },
+      {
+        "date": "2026-03-20",
+        "label": "Mar 20",
+        "cpm": 7.36,
+        "source": "[5]"
+      },
+      {
+        "date": "2026-03-21",
+        "label": "Mar 21",
+        "cpm": 7.38,
+        "source": "[5]"
+      },
+      {
+        "date": "2026-03-22",
+        "label": "Mar 22",
+        "cpm": 6.79,
+        "source": "[5]"
+      },
+      {
+        "date": "2026-03-23",
+        "label": "Mar 23",
+        "cpm": 7.38,
+        "source": "[5]"
+      },
+      {
+        "date": "2026-03-24",
+        "label": "Mar 24",
+        "cpm": 7.29,
+        "source": "[5]"
+      },
+      {
+        "date": "2026-03-25",
+        "label": "Mar 25",
+        "cpm": 7.31,
+        "source": "[5]"
+      },
+      {
+        "date": "2026-03-26",
+        "label": "Mar 26",
+        "cpm": 7.82,
+        "source": "[5]"
+      }
+    ],
+    "cpc_dating": [
+      {
+        "date": "2026-02-25",
+        "label": "Feb 25",
+        "cpc": 0.47,
+        "source": "[5]"
+      },
+      {
+        "date": "2026-02-26",
+        "label": "Feb 26",
+        "cpc": 0.46,
+        "source": "[5]"
+      },
+      {
+        "date": "2026-02-27",
+        "label": "Feb 27",
+        "cpc": 0.45,
+        "source": "[5]"
+      },
+      {
+        "date": "2026-02-28",
+        "label": "Feb 28",
+        "cpc": 0.44,
+        "source": "[5]"
+      },
+      {
+        "date": "2026-03-01",
+        "label": "Mar 01",
+        "cpc": 0.39,
+        "source": "[5]"
+      },
+      {
+        "date": "2026-03-02",
+        "label": "Mar 02",
+        "cpc": 0.42,
+        "source": "[5]"
+      },
+      {
+        "date": "2026-03-03",
+        "label": "Mar 03",
+        "cpc": 0.41,
+        "source": "[5]"
+      },
+      {
+        "date": "2026-03-04",
+        "label": "Mar 04",
+        "cpc": 0.41,
+        "source": "[5]"
+      },
+      {
+        "date": "2026-03-05",
+        "label": "Mar 05",
+        "cpc": 0.41,
+        "source": "[5]"
+      },
+      {
+        "date": "2026-03-06",
+        "label": "Mar 06",
+        "cpc": 0.42,
+        "source": "[5]"
+      },
+      {
+        "date": "2026-03-07",
+        "label": "Mar 07",
+        "cpc": 0.39,
+        "source": "[5]"
+      },
+      {
+        "date": "2026-03-08",
+        "label": "Mar 08",
+        "cpc": 0.38,
+        "source": "[5]"
+      },
+      {
+        "date": "2026-03-09",
+        "label": "Mar 09",
+        "cpc": 0.4,
+        "source": "[5]"
+      },
+      {
+        "date": "2026-03-10",
+        "label": "Mar 10",
+        "cpc": 0.41,
+        "source": "[5]"
+      },
+      {
+        "date": "2026-03-11",
+        "label": "Mar 11",
+        "cpc": 0.43,
+        "source": "[5]"
+      },
+      {
+        "date": "2026-03-12",
+        "label": "Mar 12",
+        "cpc": 0.41,
+        "source": "[5]"
+      },
+      {
+        "date": "2026-03-13",
+        "label": "Mar 13",
+        "cpc": 0.43,
+        "source": "[5]"
+      },
+      {
+        "date": "2026-03-14",
+        "label": "Mar 14",
+        "cpc": 0.4,
+        "source": "[5]"
+      },
+      {
+        "date": "2026-03-15",
+        "label": "Mar 15",
+        "cpc": 0.39,
+        "source": "[5]"
+      },
+      {
+        "date": "2026-03-16",
+        "label": "Mar 16",
+        "cpc": 0.42,
+        "source": "[5]"
+      },
+      {
+        "date": "2026-03-17",
+        "label": "Mar 17",
+        "cpc": 0.43,
+        "source": "[5]"
+      },
+      {
+        "date": "2026-03-18",
+        "label": "Mar 18",
+        "cpc": 0.41,
+        "source": "[5]"
+      },
+      {
+        "date": "2026-03-19",
+        "label": "Mar 19",
+        "cpc": 0.42,
+        "source": "[5]"
+      },
+      {
+        "date": "2026-03-20",
+        "label": "Mar 20",
+        "cpc": 0.43,
+        "source": "[5]"
+      },
+      {
+        "date": "2026-03-21",
+        "label": "Mar 21",
+        "cpc": 0.4,
+        "source": "[5]"
+      },
+      {
+        "date": "2026-03-22",
+        "label": "Mar 22",
+        "cpc": 0.39,
+        "source": "[5]"
+      },
+      {
+        "date": "2026-03-23",
+        "label": "Mar 23",
+        "cpc": 0.42,
+        "source": "[5]"
+      },
+      {
+        "date": "2026-03-24",
+        "label": "Mar 24",
+        "cpc": 0.43,
+        "source": "[5]"
+      },
+      {
+        "date": "2026-03-25",
+        "label": "Mar 25",
+        "cpc": 0.41,
+        "source": "[5]"
+      },
+      {
+        "date": "2026-03-26",
+        "label": "Mar 26",
+        "cpc": 0.42,
+        "source": "[5]"
+      }
+    ]
+  },
+  "dating_mom": {
+    "months": {
+      "current": "March 2026",
+      "previous": "February 2026",
+      "prev2": "January 2026"
+    },
+    "dating": {
+      "cpm_current": 7.54,
+      "cpm_previous": 8.1,
+      "cpm_prev2": 6.8,
+      "cpm_mom_pct": -6.9,
+      "cpm_trend": 19.1,
+      "cpc_current": 0.42,
+      "cpc_previous": 0.46,
+      "cpc_prev2": 0.35,
+      "cpc_mom_pct": -8.7,
+      "cpc_trend": 31.4
+    },
+    "all_industry": {
+      "cpm_current": 17.5,
+      "cpm_previous": 16.8,
+      "cpm_mom_pct": 4.2,
+      "cpc_current": 0.98,
+      "cpc_previous": 0.92,
+      "cpc_mom_pct": 6.5
+    }
+  },
+  "incidents": [
+    {
+      "source": "StatusGator (Official)",
+      "title": "Service outage 25m Mar 18, 2026 12:27 PM Never acknowledged",
+      "url": "https://statusgator.com/services/meta/platform-status",
+      "date": "2026-03-26",
+      "severity": "major",
+      "component": "Platform"
+    },
+    {
+      "source": "StatusGator (Official)",
+      "title": "High disruptions 6h 45m Jan 30, 2026  5:05 PM down icon Down",
+      "url": "https://statusgator.com/services/meta/platform-status",
+      "date": "2026-03-26",
+      "severity": "major",
+      "component": "Platform"
+    },
+    {
+      "source": "StatusGator (Official)",
+      "title": "Features StatusGator Downdetector",
+      "url": "https://statusgator.com/services/meta/platform-status",
+      "date": "2026-03-26",
+      "severity": "major",
+      "component": "Platform"
+    },
+    {
+      "source": "StatusGator (Official)",
+      "title": "Both official and crowdsourced updates for Meta Platform Status outages. check icon x icon",
+      "url": "https://statusgator.com/services/meta/platform-status",
+      "date": "2026-03-26",
+      "severity": "major",
+      "component": "Platform"
+    },
+    {
+      "source": "IsDown",
+      "title": "Meta service health over the last 24 hours This chart shows the number of user-reported issues for Meta service health over the past 24 hours, grouped into 20-minute intervals. It's normal to see occasional reports, which may be due to individual user issues rather than a broader problem. Alert othe",
+      "url": "https://isdown.app/status/meta",
+      "date": "2026-03-26",
+      "severity": "major",
+      "component": "Platform"
+    },
+    {
+      "source": "IsDown",
+      "title": "Meta Downtime Health \u2014 Last 90 Days In the last 90 days, Meta had 46 incidents (18 major outages and 28 minor incidents) with a median duration of 3 hours 41 minutes. Total 46 Incidents Critical 18 Major Outages Warning 28 Minor Incidents Duration 3 hour Median Resolution",
+      "url": "https://isdown.app/status/meta",
+      "date": "2026-03-26",
+      "severity": "major",
+      "component": "Platform"
+    },
+    {
+      "source": "StatusGator (Official)",
+      "title": "Medium disruptions 9d 12h 19m Feb 27, 2026  3:55 AM warn icon Warn",
+      "url": "https://statusgator.com/services/meta/platform-status",
+      "date": "2026-03-26",
+      "severity": "warning",
+      "component": "Platform"
+    },
+    {
+      "source": "StatusGator (Official)",
+      "title": "Medium disruptions 4h 25m Feb 26, 2026 11:30 PM warn icon Warn",
+      "url": "https://statusgator.com/services/meta/platform-status",
+      "date": "2026-03-26",
+      "severity": "warning",
+      "component": "Platform"
+    },
+    {
+      "source": "StatusGator (Official)",
+      "title": "Medium disruptions 26d 23h 40m Jan 30, 2026 11:50 PM warn icon Warn",
+      "url": "https://statusgator.com/services/meta/platform-status",
+      "date": "2026-03-26",
+      "severity": "warning",
+      "component": "Platform"
+    },
+    {
+      "source": "StatusGator (Official)",
+      "title": "Minor incident 69d 4h 16m Nov 21, 2025  3:50 PM warn icon Warn",
+      "url": "https://statusgator.com/services/meta/platform-status",
+      "date": "2026-03-26",
+      "severity": "warning",
+      "component": "Platform"
+    },
+    {
+      "source": "StatusGator (Official)",
+      "title": "Incident description Duration StatusGator detected Officially acknowledged",
+      "url": "https://statusgator.com/services/meta/platform-status",
+      "date": "2026-03-26",
+      "severity": "minor",
+      "component": "Platform"
+    },
+    {
+      "source": "StatusGator (Official)",
+      "title": "Problems signing in due to ReCaptcha verification errors 1h 15m Mar 20, 2026  7:45 PM Never acknowledged",
+      "url": "https://statusgator.com/services/meta/platform-status",
+      "date": "2026-03-26",
+      "severity": "minor",
+      "component": "Platform"
+    },
+    {
+      "source": "StatusGator (Official)",
+      "title": "Ads platform instability affecting campaign delivery 17m Mar 10, 2026  8:11 PM Never acknowledged",
+      "url": "https://statusgator.com/services/meta/platform-status",
+      "date": "2026-03-26",
+      "severity": "minor",
+      "component": "Platform"
+    },
+    {
+      "source": "StatusGator (Official)",
+      "title": "Metapay not processing donations. 34m Mar  9, 2026 10:11 PM 45m later",
+      "url": "https://statusgator.com/services/meta/platform-status",
+      "date": "2026-03-26",
+      "severity": "minor",
+      "component": "Platform"
+    },
+    {
+      "source": "StatusGator (Official)",
+      "title": "Image upload fails to complete in upload Flow 2h 47m Mar  5, 2026  1:26 PM 2h 15m later",
+      "url": "https://statusgator.com/services/meta/platform-status",
+      "date": "2026-03-26",
+      "severity": "minor",
+      "component": "Platform"
+    },
+    {
+      "source": "StatusGator (Official)",
+      "title": "Meta AI not responding 38m Aug 20, 2025 10:30 PM Never acknowledged",
+      "url": "https://statusgator.com/services/meta/platform-status",
+      "date": "2026-03-26",
+      "severity": "minor",
+      "component": "Platform"
+    },
+    {
+      "source": "StatusGator (Official)",
+      "title": "Ads not loading 1h 18m Jun 13, 2025  7:29 AM Never acknowledged",
+      "url": "https://statusgator.com/services/meta/platform-status",
+      "date": "2026-03-26",
+      "severity": "minor",
+      "component": "Platform"
+    },
+    {
+      "source": "StatusGator (Official)",
+      "title": "Issues loading content on Threads and Instagram 30m Mar 20, 2025 11:44 PM Never acknowledged",
+      "url": "https://statusgator.com/services/meta/platform-status",
+      "date": "2026-03-26",
+      "severity": "minor",
+      "component": "Instagram"
+    },
+    {
+      "source": "StatusGator (Official)",
+      "title": "Issues adding payment method 37m Mar  6, 2025  4:41 AM Never acknowledged",
+      "url": "https://statusgator.com/services/meta/platform-status",
+      "date": "2026-03-26",
+      "severity": "minor",
+      "component": "Payments"
+    },
+    {
+      "source": "StatusGator (Official)",
+      "title": "Issues with sending messages on WhatsApp and Facebook Messenger 21m Feb 28, 2025  3:49 PM Never acknowledged",
+      "url": "https://statusgator.com/services/meta/platform-status",
+      "date": "2026-03-26",
+      "severity": "minor",
+      "component": "WhatsApp API"
+    },
+    {
+      "source": "StatusGator (Official)",
+      "title": "Incident Name Duration Started Severity",
+      "url": "https://statusgator.com/services/meta/platform-status",
+      "date": "2026-03-26",
+      "severity": "minor",
+      "component": "Platform"
+    },
+    {
+      "source": "StatusGator (Official)",
+      "title": "More than 7,360 services monitored. check icon x icon",
+      "url": "https://statusgator.com/services/meta/platform-status",
+      "date": "2026-03-26",
+      "severity": "minor",
+      "component": "Platform"
+    },
+    {
+      "source": "StatusGator (Official)",
+      "title": "Proactive alerts on Meta Platform Status status changes sent to your Slack, Microsoft Teams, and more. check icon x icon",
+      "url": "https://statusgator.com/services/meta/platform-status",
+      "date": "2026-03-26",
+      "severity": "minor",
+      "component": "Platform"
+    },
+    {
+      "source": "StatusGator (Official)",
+      "title": "Monitoring of both Meta Platform Status and your own apps. check icon x icon",
+      "url": "https://statusgator.com/services/meta/platform-status",
+      "date": "2026-03-26",
+      "severity": "minor",
+      "component": "Platform"
+    },
+    {
+      "source": "StatusGator (Official)",
+      "title": "Granular monitoring of Meta Platform Status components. check icon x icon",
+      "url": "https://statusgator.com/services/meta/platform-status",
+      "date": "2026-03-26",
+      "severity": "minor",
+      "component": "Platform"
+    },
+    {
+      "source": "IsDown",
+      "title": "Meta not working for you? Report a problem Thank you for reporting an issue with Meta.",
+      "url": "https://isdown.app/status/meta",
+      "date": "2026-03-26",
+      "severity": "minor",
+      "component": "Platform"
+    }
+  ],
+  "incidents_14d": [
+    {
+      "date": "2026-03-13",
+      "label": "Mar 13",
+      "total": 3,
+      "major": 1,
+      "minor": 2
+    },
+    {
+      "date": "2026-03-14",
+      "label": "Mar 14",
+      "total": 1,
+      "major": 0,
+      "minor": 1
+    },
+    {
+      "date": "2026-03-15",
+      "label": "Mar 15",
+      "total": 2,
+      "major": 0,
+      "minor": 2
+    },
+    {
+      "date": "2026-03-16",
+      "label": "Mar 16",
+      "total": 0,
+      "major": 0,
+      "minor": 0
+    },
+    {
+      "date": "2026-03-17",
+      "label": "Mar 17",
+      "total": 0,
+      "major": 0,
+      "minor": 0
+    },
+    {
+      "date": "2026-03-18",
+      "label": "Mar 18",
+      "total": 4,
+      "major": 1,
+      "minor": 3
+    },
+    {
+      "date": "2026-03-19",
+      "label": "Mar 19",
+      "total": 0,
+      "major": 0,
+      "minor": 0
+    },
+    {
+      "date": "2026-03-20",
+      "label": "Mar 20",
+      "total": 4,
+      "major": 1,
+      "minor": 3
+    },
+    {
+      "date": "2026-03-21",
+      "label": "Mar 21",
+      "total": 4,
+      "major": 1,
+      "minor": 3
+    },
+    {
+      "date": "2026-03-22",
+      "label": "Mar 22",
+      "total": 4,
+      "major": 1,
+      "minor": 3
+    },
+    {
+      "date": "2026-03-23",
+      "label": "Mar 23",
+      "total": 1,
+      "major": 0,
+      "minor": 1
+    },
+    {
+      "date": "2026-03-24",
+      "label": "Mar 24",
+      "total": 2,
+      "major": 0,
+      "minor": 2
+    },
+    {
+      "date": "2026-03-25",
+      "label": "Mar 25",
+      "total": 0,
+      "major": 0,
+      "minor": 0
+    },
+    {
+      "date": "2026-03-26",
+      "label": "Mar 26",
+      "total": 8,
+      "major": 3,
+      "minor": 5
+    }
+  ],
+  "news": [
+    {
+      "title": "Facebook back up following brief outage",
+      "url": "http://www.bing.com/news/apiclick.aspx?ref=FexRss&aid=&tid=69c515fb09a84d30a7766133b4cb2740&url=https%3a%2f%2fwww.kgw.com%2farticle%2fnews%2fnation-world%2fis-facebook-down-users-report-issues-meta%2f507-c0d9b756-de5b-4dbd-ab0b-ab24da5f0c5f&c=16595652078119427155&mkt=en-ww",
+      "source": "News",
+      "date": "2026-03-03 14:15",
+      "summary": "WASHINGTON \u2014 Facebook is back to normal following a brief outage on Tuesday afternoon. Around 4 p.m. ET, reports began spiking on outage tracking website DownDetector. More than 10,000 users reported ...",
+      "severity": "critical"
+    },
+    {
+      "title": "Facebook was down for hours, leaving thousands of users locked out",
+      "url": "http://www.bing.com/news/apiclick.aspx?ref=FexRss&aid=&tid=69c515fb09a84d30a7766133b4cb2740&url=https%3a%2f%2fwww.msn.com%2fen-in%2fmoney%2fnews%2ffacebook-was-down-for-hours-leaving-thousands-of-users-locked-out%2far-AA1XtNIa&c=8235192918795784519&mkt=en-ww",
+      "source": "News",
+      "date": "2026-03-03 20:26",
+      "summary": "Facebook experienced a widespread outage Tuesday afternoon, leaving users globally unable to access their feeds and causing significant disruption to advertisers. Reports flooded in from multiple ...",
+      "severity": "critical"
+    },
+    {
+      "title": "Facebook largely back up after brief outage in the US, Downdetector shows",
+      "url": "http://www.bing.com/news/apiclick.aspx?ref=FexRss&aid=&tid=69c515fb09a84d30a7766133b4cb2740&url=https%3a%2f%2fwww.channelnewsasia.com%2fbusiness%2ffacebook-largely-back-up-after-brief-outage-in-us-downdetector-shows-5968406&c=10394373427445924501&mkt=en-ww",
+      "source": "News",
+      "date": "2026-03-03 22:53",
+      "summary": "March 3 : Meta Platforms' Facebook was largely back up after an outage that affected thousands of users in the U.S. on Tuesday, according to Downdetector.com. At its peak, there were more than 11,000 ...",
+      "severity": "critical"
+    },
+    {
+      "title": "Facebook, Instagram, TikTok down? Thousands report receiving \u2018Your account is currently unavailable\u2019 message",
+      "url": "http://www.bing.com/news/apiclick.aspx?ref=FexRss&aid=&tid=69c515fed9c24399bee3062bd5edc120&url=https%3a%2f%2fwww.livemint.com%2ftechnology%2ffacebook-instagram-tiktok-down-thousands-report-receiving-your-account-is-currently-unavailable-message-11772582998174.html&c=9203606616559923932&mkt=en-ww",
+      "source": "News",
+      "date": "2026-03-04 03:52",
+      "summary": "Facebook, Tiktok, and Instagram is down for users across the globe as hundreds of people report outages. Users have reported receiving \u2018Your account is currently unavailable due to a site ...",
+      "severity": "critical"
+    }
+  ],
+  "outage_reports_14d": [
+    {
+      "date": "2026-03-13",
+      "label": "Mar 13",
+      "total": 1,
+      "critical": 0,
+      "high": 0,
+      "medium": 1
+    },
+    {
+      "date": "2026-03-14",
+      "label": "Mar 14",
+      "total": 0,
+      "critical": 0,
+      "high": 0,
+      "medium": 0
+    },
+    {
+      "date": "2026-03-15",
+      "label": "Mar 15",
+      "total": 6,
+      "critical": 1,
+      "high": 2,
+      "medium": 3
+    },
+    {
+      "date": "2026-03-16",
+      "label": "Mar 16",
+      "total": 0,
+      "critical": 0,
+      "high": 0,
+      "medium": 0
+    },
+    {
+      "date": "2026-03-17",
+      "label": "Mar 17",
+      "total": 3,
+      "critical": 0,
+      "high": 1,
+      "medium": 2
+    },
+    {
+      "date": "2026-03-18",
+      "label": "Mar 18",
+      "total": 1,
+      "critical": 0,
+      "high": 0,
+      "medium": 1
+    },
+    {
+      "date": "2026-03-19",
+      "label": "Mar 19",
+      "total": 6,
+      "critical": 1,
+      "high": 2,
+      "medium": 3
+    },
+    {
+      "date": "2026-03-20",
+      "label": "Mar 20",
+      "total": 1,
+      "critical": 0,
+      "high": 0,
+      "medium": 1
+    },
+    {
+      "date": "2026-03-21",
+      "label": "Mar 21",
+      "total": 0,
+      "critical": 0,
+      "high": 0,
+      "medium": 0
+    },
+    {
+      "date": "2026-03-22",
+      "label": "Mar 22",
+      "total": 4,
+      "critical": 1,
+      "high": 1,
+      "medium": 2
+    },
+    {
+      "date": "2026-03-23",
+      "label": "Mar 23",
+      "total": 1,
+      "critical": 0,
+      "high": 0,
+      "medium": 1
+    },
+    {
+      "date": "2026-03-24",
+      "label": "Mar 24",
+      "total": 4,
+      "critical": 1,
+      "high": 1,
+      "medium": 2
+    },
+    {
+      "date": "2026-03-25",
+      "label": "Mar 25",
+      "total": 8,
+      "critical": 2,
+      "high": 3,
+      "medium": 3
+    },
+    {
+      "date": "2026-03-26",
+      "label": "Mar 26",
+      "total": 6,
+      "critical": 1,
+      "high": 2,
+      "medium": 3
+    }
+  ],
+  "releases": [
+    {
+      "date": "2026-03-31",
+      "title": "Webhooks mTLS Certificate Change",
+      "description": "Webhooks mTLS certificates switching to Meta CA. Trust store updates required.",
+      "impact": "high",
+      "category": "API"
+    },
+    {
+      "date": "2026-03-25",
+      "title": "Account Health Score in Ads Manager",
+      "description": "Visible Account Health Score (0-100) now displayed.",
+      "impact": "medium",
+      "category": "Policy"
+    },
+    {
+      "date": "2026-03-20",
+      "title": "Graph API v25 \u2014 Page Viewer Metric",
+      "description": "New Page Viewer Metric replacing legacy reach. Deprecation by June 2026.",
+      "impact": "medium",
+      "category": "API"
+    },
+    {
+      "date": "2026-03-18",
+      "title": "Threads Ads \u2014 Global Rollout",
+      "description": "Threads in ad ecosystem with global delivery. Image/video with full Ads Manager integration.",
+      "impact": "high",
+      "category": "New Placements"
+    },
+    {
+      "date": "2026-03-15",
+      "title": "Advantage+ as Default for New Campaigns",
+      "description": "Advantage+ automation tools are now the default for all new campaigns.",
+      "impact": "high",
+      "category": "Automation"
+    },
+    {
+      "date": "2026-03-15",
+      "title": "Advantage+ Leads Campaigns \u2014 Global Launch",
+      "description": "Advantage+ Leads Campaigns now available globally.",
+      "impact": "high",
+      "category": "Automation"
+    },
+    {
+      "date": "2026-03-12",
+      "title": "Instagram/Facebook Page Visits Goal",
+      "description": "New performance goal: 'Maximise Number of Profile/Page Visits'.",
+      "impact": "medium",
+      "category": "Campaign Goals"
+    },
+    {
+      "date": "2026-03-12",
+      "title": "Ad Sequencing for Awareness & Engagement",
+      "description": "Ad Sequencing now available for Awareness and Engagement objectives.",
+      "impact": "medium",
+      "category": "Campaign Features"
+    },
+    {
+      "date": "2026-03-10",
+      "title": "New Ad Format Selection System",
+      "description": "Single ad can now use multiple formats and creatives.",
+      "impact": "high",
+      "category": "Ad Formats"
+    },
+    {
+      "date": "2026-03-10",
+      "title": "CTA Button Behavior Change",
+      "description": "CTA in Ads Manager no longer modifies original organic posts.",
+      "impact": "medium",
+      "category": "Ad Formats"
+    },
+    {
+      "date": "2026-03-08",
+      "title": "'Describe Your Audience' Natural Language Targeting",
+      "description": "AI-powered text box in Advantage+ Targeting \u2014 write plain-text audience descriptions.",
+      "impact": "high",
+      "category": "Targeting"
+    },
+    {
+      "date": "2026-03-08",
+      "title": "Custom Audience Engagement Filters",
+      "description": "New retargeting filters: engagement frequency and time frame.",
+      "impact": "high",
+      "category": "Targeting"
+    },
+    {
+      "date": "2026-03-05",
+      "title": "New 'Conversion Count' Breakdown",
+      "description": "New breakdown dimension added to Ads Manager reporting.",
+      "impact": "medium",
+      "category": "Reporting"
+    },
+    {
+      "date": "2026-03-01",
+      "title": "Attribution Metric Alignment Update",
+      "description": "Click-through attribution now counts only link clicks. Non-link interactions categorized as engage-through.",
+      "impact": "high",
+      "category": "Metrics"
+    },
+    {
+      "date": "2026-03-01",
+      "title": "Video Engaged-View Threshold Changed",
+      "description": "Engaged-view threshold dropped from 10 to 5 seconds for video ads.",
+      "impact": "high",
+      "category": "Metrics"
+    }
+  ],
+  "upcoming_changes": [
+    {
+      "date": "2026-04-01",
+      "title": "Location Fees (Digital Service Tax)",
+      "description": "Extra charges in AT(5%), FR(3%), IT(3%), ES(3%), TR(5%), UK(2%). Based on where ads shown.",
+      "impact": "high",
+      "category": "Billing"
+    },
+    {
+      "date": "2026-06-01",
+      "title": "Legacy Page Reach Metric Deprecation",
+      "description": "Legacy reach metric fully removed. Migrate to Page Viewer Metric.",
+      "impact": "medium",
+      "category": "API"
+    },
+    {
+      "date": "2026-09-01",
+      "title": "ASC/AAC Campaign API Deprecation",
+      "description": "Marketing API phases out legacy Advantage Shopping and App Campaign APIs.",
+      "impact": "high",
+      "category": "API"
+    }
+  ],
+  "data_sources": [
+    {
+      "id": "[1]",
+      "name": "SuperAds.ai CPM Benchmarks",
+      "url": "https://www.superads.ai/facebook-ads-costs/cpm-cost-per-mille",
+      "what": "Monthly CPM, $3B ad spend analysis"
+    },
+    {
+      "id": "[2]",
+      "name": "Right Side Up / Varos",
+      "url": "https://www.rightsideup.com/blog/facebook-cpm-trends",
+      "what": "Q1 2026 CPM analysis"
+    },
+    {
+      "id": "[3]",
+      "name": "SuperAds.ai CPC Benchmarks",
+      "url": "https://www.superads.ai/facebook-ads-costs/cpc-cost-per-click",
+      "what": "Monthly CPC, global median"
+    },
+    {
+      "id": "[4]",
+      "name": "AdAmigo.ai",
+      "url": "https://www.adamigo.ai/blog/meta-ads-cpm-cpc-benchmarks-by-country-2026",
+      "what": "2026 CPC by country"
+    },
+    {
+      "id": "[5]",
+      "name": "Adjust \u2014 State of Dating Apps",
+      "url": "https://www.adjust.com/blog/state-of-dating-apps/",
+      "what": "Dating CPM/CPC/CPI benchmarks"
+    },
+    {
+      "id": "[6]",
+      "name": "Triple Whale",
+      "url": "https://www.triplewhale.com/blog/facebook-ads-benchmarks",
+      "what": "Industry benchmarks, 35K+ accounts"
+    },
+    {
+      "id": "[7]",
+      "name": "StatusGator",
+      "url": "https://statusgator.com/services/meta/platform-status",
+      "what": "Official Meta status monitoring"
+    },
+    {
+      "id": "[8]",
+      "name": "IsDown",
+      "url": "https://isdown.app/status/meta",
+      "what": "Meta incidents aggregator"
+    },
+    {
+      "id": "[9]",
+      "name": "SwipeInsight",
+      "url": "https://web.swipeinsight.app/topics/meta-ads",
+      "what": "Meta Ads news & releases"
+    }
+  ]
+}

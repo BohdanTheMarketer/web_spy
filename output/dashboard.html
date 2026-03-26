@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Meta Ads Monitor — 2026-03-26</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<style>
+:root {
+    --bg:#0b0d14;--surface:#131620;--surface2:#1c2030;--border:#262b3e;
+    --text:#e2e4ee;--text-dim:#7b7f96;--accent:#4f8cff;--accent2:#7c5cfc;
+    --green:#34d399;--red:#f87171;--orange:#fbbf24;--dating:#f472b6;
+    --dating-dim:rgba(244,114,182,.12);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,Roboto,sans-serif;background:var(--bg);color:var(--text);line-height:1.6;padding:20px;}
+.container{max-width:1440px;margin:0 auto;}
+.header{display:flex;justify-content:space-between;align-items:center;padding:20px 28px;background:linear-gradient(135deg,var(--surface),var(--surface2));border-radius:16px;border:1px solid var(--border);margin-bottom:18px;}
+.header h1{font-size:22px;font-weight:800;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.header .sub{color:var(--text-dim);font-size:12px;margin-top:2px;}
+.header .right{text-align:right;color:var(--text-dim);font-size:12px;}
+.header .date{font-size:15px;color:var(--text);font-weight:700;}
+.kpi-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:18px;}
+.kpi{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px;text-align:center;}
+.kpi .label{font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.6px;}
+.kpi .value{font-size:24px;font-weight:800;margin:2px 0;}
+.kpi .sub{font-size:10px;color:var(--text-dim);}
+.kpi.dating{border-color:var(--dating);}
+.kpi.dating .value{color:var(--dating);}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:16px;}
+.card h2{font-size:14px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+.card h2 .icon{font-size:16px;}
+.card .chart-source{font-size:10px;color:var(--text-dim);margin-top:6px;font-style:italic;}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+@media(max-width:1000px){.grid-2{grid-template-columns:1fr;}}
+.chart-wrap{position:relative;height:240px;}
+table{width:100%;border-collapse:collapse;font-size:12px;}
+th{text-align:left;padding:7px 10px;background:var(--surface2);border-bottom:2px solid var(--border);font-weight:700;font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--text-dim);}
+td{padding:7px 10px;border-bottom:1px solid var(--border);}
+tr:hover td{background:rgba(79,140,255,.04);}
+tr.highlight{background:var(--dating-dim);}
+tr.highlight td{font-weight:600;}
+.badge{display:inline-block;padding:2px 8px;border-radius:5px;font-size:10px;font-weight:700;white-space:nowrap;}
+.badge.major{background:rgba(248,113,113,.15);color:var(--red);}
+.badge.warning{background:rgba(251,191,36,.15);color:var(--orange);}
+.badge.minor{background:rgba(79,140,255,.15);color:var(--accent);}
+.badge.info{background:rgba(79,140,255,.1);color:var(--accent);}
+.badge.ok{background:rgba(52,211,153,.15);color:var(--green);}
+.badge.critical{background:rgba(248,113,113,.2);color:var(--red);}
+.badge.high{background:rgba(251,191,36,.15);color:var(--orange);}
+.badge.medium{background:rgba(79,140,255,.15);color:var(--accent);}
+.comp-tag{display:inline-block;padding:2px 7px;border-radius:4px;font-size:10px;font-weight:600;background:var(--surface2);color:var(--text-dim);border:1px solid var(--border);}
+.cat-tag{display:inline-block;padding:2px 7px;border-radius:4px;font-size:10px;font-weight:600;background:rgba(124,92,252,.1);color:var(--accent2);border:1px solid rgba(124,92,252,.2);}
+.dating-card{border-color:var(--dating);}
+.dating-card h2{color:var(--dating);}
+/* MoM section */
+.mom-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;}
+.mom-card{background:var(--surface2);border-radius:10px;padding:14px;}
+.mom-header{font-size:12px;font-weight:700;color:var(--text);margin-bottom:8px;}
+.mom-row{display:flex;gap:12px;align-items:center;}
+.mom-col{flex:1;}
+.mom-label{font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.3px;}
+.mom-val{font-size:16px;font-weight:700;margin-top:2px;}
+.mom-val.dim{color:var(--text-dim);}
+.val.up{color:var(--red);} .val.down{color:var(--green);}
+.news-item{padding:10px 0;border-bottom:1px solid var(--border);}
+.news-item:last-child{border-bottom:none;}
+.news-item .title{font-weight:600;font-size:13px;}
+.news-item .title a{color:var(--accent);text-decoration:none;}
+.news-item .title a:hover{text-decoration:underline;}
+.news-item .meta-info{font-size:11px;color:var(--text-dim);margin-top:2px;}
+.news-item .summary{font-size:12px;color:var(--text-dim);margin-top:3px;}
+.sources-box{margin-top:20px;padding:14px 18px;background:var(--surface);border:1px solid var(--border);border-radius:10px;font-size:11px;color:var(--text-dim);line-height:1.8;}
+.sources-box a{color:var(--accent);text-decoration:none;}
+.sources-box a:hover{text-decoration:underline;}
+.refresh-btn{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none;padding:8px 20px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;transition:opacity .2s;margin-bottom:6px;}
+.refresh-btn:hover{opacity:.85;}
+.refresh-btn:disabled{opacity:.5;cursor:wait;}
+</style>
+</head>
+<body>
+<div class="container">
+
+<div class="header">
+    <div>
+        <h1>Meta Ads Daily Monitor</h1>
+        <div class="sub">Daily CPM/CPC &middot; Platform Incidents &middot; Releases &middot; Outage News</div>
+    </div>
+    <div class="right">
+        <button class="refresh-btn" onclick="doRefresh(this)">&#x21bb; Refresh Data</button>
+        <div class="date">2026-03-26</div>
+        <div>Generated: 2026-03-26 13:18:23</div>
+    </div>
+</div>
+
+<div class="kpi-row">
+    <div class="kpi"><div class="label">CPM (All)</div><div class="value" style="color:var(--accent)">$17.5</div><div class="sub">This month avg</div></div>
+    <div class="kpi"><div class="label">CPC (All)</div><div class="value" style="color:var(--accent)">$0.98</div><div class="sub">This month avg</div></div>
+    <div class="kpi dating"><div class="label">Dating CPM</div><div class="value">$7.54</div></div>
+    <div class="kpi dating"><div class="label">Dating CPC</div><div class="value">$0.42</div></div>
+    <div class="kpi"><div class="label">Incidents (3d)</div><div class="value" style="color:var(--red)">10</div></div>
+    <div class="kpi"><div class="label">Outage News</div><div class="value" style="color:var(--red)">4</div></div>
+    <div class="kpi"><div class="label">Releases</div><div class="value" style="color:var(--accent2)">15</div><div class="sub">March 2026</div></div>
+</div>
+
+<!-- DAILY CPM/CPC CHARTS -->
+<div class="grid-2">
+    <div class="card">
+        <h2><span class="icon">&#128200;</span> Daily CPM (30 days)</h2>
+        <div class="chart-wrap"><canvas id="cpmChart"></canvas></div>
+        <div class="chart-source">All Industries: [2] SuperAds.ai &middot; Dating: [5] Adjust</div>
+    </div>
+    <div class="card">
+        <h2><span class="icon">&#128201;</span> Daily CPC (30 days)</h2>
+        <div class="chart-wrap"><canvas id="cpcChart"></canvas></div>
+        <div class="chart-source">All Industries: [4] SuperAds.ai &middot; Dating: [5] Adjust</div>
+    </div>
+</div>
+
+<!-- 14-DAY BAR CHARTS -->
+<div class="grid-2">
+    <div class="card">
+        <h2><span class="icon">&#128308;</span> Platform Incidents — Last 14 Days</h2>
+        <div class="chart-wrap"><canvas id="incidentsBar"></canvas></div>
+        <div class="chart-source">[7] StatusGator &middot; [8] IsDown &middot; Downdetector user reports</div>
+    </div>
+    <div class="card">
+        <h2><span class="icon">&#9888;&#65039;</span> Outage & Error Reports — Last 14 Days</h2>
+        <div class="chart-wrap"><canvas id="outageBar"></canvas></div>
+        <div class="chart-source">Bing News aggregation &middot; Downdetector &middot; Media reports</div>
+    </div>
+</div>
+
+<!-- BENCHMARKS + MOM -->
+<div class="grid-2">
+    <div class="card">
+        <h2><span class="icon">&#128202;</span> CPM/CPC Benchmarks by Industry</h2>
+        <div style="max-height:480px;overflow-y:auto;">
+        <table><thead><tr><th>Industry</th><th>CPM</th><th>CPC</th><th>CTR</th><th>CPA</th></tr></thead>
+        <tbody><tr><td>All Industries (Average)</td><td>$17.5</td><td>$0.98</td><td>2.19%</td><td>$38.17</td></tr>
+<tr class="highlight"><td><span style="color:var(--dating)">&#9829;</span> Dating & Personals</td><td>$7.54</td><td>$0.42</td><td>1.6%</td><td>$12.5</td></tr>
+<tr><td>E-commerce / Retail</td><td>$11.2</td><td>$0.97</td><td>1.59%</td><td>$33.44</td></tr>
+<tr><td>Finance & Insurance</td><td>$14.8</td><td>$3.77</td><td>0.56%</td><td>$41.43</td></tr>
+<tr><td>Technology</td><td>$12.3</td><td>$1.27</td><td>1.04%</td><td>$55.21</td></tr>
+<tr><td>Health & Beauty</td><td>$12.46</td><td>$1.85</td><td>1.02%</td><td>$38.33</td></tr>
+<tr><td>Education</td><td>$10.8</td><td>$1.06</td><td>0.73%</td><td>$31.0</td></tr>
+<tr><td>Real Estate</td><td>$11.0</td><td>$1.81</td><td>0.99%</td><td>$44.12</td></tr>
+<tr><td>Automotive</td><td>$10.01</td><td>$2.24</td><td>0.8%</td><td>$43.84</td></tr>
+<tr><td>Travel & Hospitality</td><td>$9.5</td><td>$0.63</td><td>0.9%</td><td>$48.37</td></tr>
+<tr><td>Gaming</td><td>$9.8</td><td>$0.49</td><td>1.85%</td><td>$18.71</td></tr>
+<tr><td>Food & Beverage</td><td>$8.9</td><td>$0.42</td><td>1.2%</td><td>$29.99</td></tr>
+<tr><td>Fitness</td><td>$10.5</td><td>$1.9</td><td>1.01%</td><td>$34.5</td></tr>
+<tr><td>Legal</td><td>$13.5</td><td>$1.32</td><td>1.61%</td><td>$78.64</td></tr>
+<tr><td>B2B / SaaS</td><td>$15.2</td><td>$2.52</td><td>0.78%</td><td>$65.8</td></tr>
+<tr><td>Entertainment</td><td>$7.8</td><td>$0.32</td><td>1.55%</td><td>$15.4</td></tr>
+</tbody></table>
+        </div>
+        <div class="chart-source">[1][3][6] SuperAds.ai, Triple Whale, AdAmigo</div>
+    </div>
+    <div class="card dating-card">
+        <h2><span class="icon">&#128152;</span> Dating Niche — Month over Month</h2>
+        
+    <div class="mom-grid">
+        <div class="mom-card">
+            <div class="mom-header">Dating CPM</div>
+            <div class="mom-row">
+                <div class="mom-col"><div class="mom-label">March 2026</div><div class="mom-val">$7.54</div></div>
+                <div class="mom-col"><div class="mom-label">February 2026</div><div class="mom-val dim">$8.1</div></div>
+                <div class="mom-col"><div class="mom-label">MoM</div><div class="mom-val"><span class="val down">-6.9%</span></div></div>
+            </div>
+        </div>
+        <div class="mom-card">
+            <div class="mom-header">Dating CPC</div>
+            <div class="mom-row">
+                <div class="mom-col"><div class="mom-label">March 2026</div><div class="mom-val">$0.42</div></div>
+                <div class="mom-col"><div class="mom-label">February 2026</div><div class="mom-val dim">$0.46</div></div>
+                <div class="mom-col"><div class="mom-label">MoM</div><div class="mom-val"><span class="val down">-8.7%</span></div></div>
+            </div>
+        </div>
+        <div class="mom-card">
+            <div class="mom-header">All Industries CPM</div>
+            <div class="mom-row">
+                <div class="mom-col"><div class="mom-label">March 2026</div><div class="mom-val">$17.5</div></div>
+                <div class="mom-col"><div class="mom-label">February 2026</div><div class="mom-val dim">$16.8</div></div>
+                <div class="mom-col"><div class="mom-label">MoM</div><div class="mom-val"><span class="val up">+4.2%</span></div></div>
+            </div>
+        </div>
+        <div class="mom-card">
+            <div class="mom-header">All Industries CPC</div>
+            <div class="mom-row">
+                <div class="mom-col"><div class="mom-label">March 2026</div><div class="mom-val">$0.98</div></div>
+                <div class="mom-col"><div class="mom-label">February 2026</div><div class="mom-val dim">$0.92</div></div>
+                <div class="mom-col"><div class="mom-label">MoM</div><div class="mom-val"><span class="val up">+6.5%</span></div></div>
+            </div>
+        </div>
+    </div>
+    <div style="font-size:11px;color:var(--text-dim);margin-top:8px;">
+        Previous trend (January 2026 → February 2026):
+        Dating CPM <span class="val up">+19.1%</span>,
+        Dating CPC <span class="val up">+31.4%</span>
+    </div>
+    
+        <div class="chart-source" style="margin-top:10px">[5] Adjust — State of Dating Apps 2026</div>
+    </div>
+</div>
+
+<!-- INCIDENTS TABLE -->
+<div class="card">
+    <h2><span class="icon">&#128308;</span> Meta Platform Incidents (Last 3 Days)</h2>
+    <div style="max-height:380px;overflow-y:auto;"><table><thead><tr><th>Source</th><th>Component</th><th>Severity</th><th>Description</th><th>Date</th></tr></thead><tbody><tr><td><a href="https://statusgator.com/services/meta/platform-status" target="_blank" style="color:var(--accent)">StatusGator (Official)</a></td><td><span class="comp-tag">Platform</span></td><td><span class="badge major">MAJOR</span></td><td>Service outage 25m Mar 18, 2026 12:27 PM Never acknowledged</td><td>2026-03-26</td></tr><tr><td><a href="https://statusgator.com/services/meta/platform-status" target="_blank" style="color:var(--accent)">StatusGator (Official)</a></td><td><span class="comp-tag">Platform</span></td><td><span class="badge major">MAJOR</span></td><td>High disruptions 6h 45m Jan 30, 2026  5:05 PM down icon Down</td><td>2026-03-26</td></tr><tr><td><a href="https://statusgator.com/services/meta/platform-status" target="_blank" style="color:var(--accent)">StatusGator (Official)</a></td><td><span class="comp-tag">Platform</span></td><td><span class="badge major">MAJOR</span></td><td>Features StatusGator Downdetector</td><td>2026-03-26</td></tr><tr><td><a href="https://statusgator.com/services/meta/platform-status" target="_blank" style="color:var(--accent)">StatusGator (Official)</a></td><td><span class="comp-tag">Platform</span></td><td><span class="badge major">MAJOR</span></td><td>Both official and crowdsourced updates for Meta Platform Status outages. check icon x icon</td><td>2026-03-26</td></tr><tr><td><a href="https://isdown.app/status/meta" target="_blank" style="color:var(--accent)">IsDown</a></td><td><span class="comp-tag">Platform</span></td><td><span class="badge major">MAJOR</span></td><td>Meta service health over the last 24 hours This chart shows the number of user-reported issues for Meta service health over the past 24 hours, grouped into 20-minute intervals. It's normal to see occa</td><td>2026-03-26</td></tr><tr><td><a href="https://isdown.app/status/meta" target="_blank" style="color:var(--accent)">IsDown</a></td><td><span class="comp-tag">Platform</span></td><td><span class="badge major">MAJOR</span></td><td>Meta Downtime Health — Last 90 Days In the last 90 days, Meta had 46 incidents (18 major outages and 28 minor incidents) with a median duration of 3 hours 41 minutes. Total 46 Incidents Critical 18 Ma</td><td>2026-03-26</td></tr><tr><td><a href="https://statusgator.com/services/meta/platform-status" target="_blank" style="color:var(--accent)">StatusGator (Official)</a></td><td><span class="comp-tag">Platform</span></td><td><span class="badge warning">WARNING</span></td><td>Medium disruptions 9d 12h 19m Feb 27, 2026  3:55 AM warn icon Warn</td><td>2026-03-26</td></tr><tr><td><a href="https://statusgator.com/services/meta/platform-status" target="_blank" style="color:var(--accent)">StatusGator (Official)</a></td><td><span class="comp-tag">Platform</span></td><td><span class="badge warning">WARNING</span></td><td>Medium disruptions 4h 25m Feb 26, 2026 11:30 PM warn icon Warn</td><td>2026-03-26</td></tr><tr><td><a href="https://statusgator.com/services/meta/platform-status" target="_blank" style="color:var(--accent)">StatusGator (Official)</a></td><td><span class="comp-tag">Platform</span></td><td><span class="badge warning">WARNING</span></td><td>Medium disruptions 26d 23h 40m Jan 30, 2026 11:50 PM warn icon Warn</td><td>2026-03-26</td></tr><tr><td><a href="https://statusgator.com/services/meta/platform-status" target="_blank" style="color:var(--accent)">StatusGator (Official)</a></td><td><span class="comp-tag">Platform</span></td><td><span class="badge warning">WARNING</span></td><td>Minor incident 69d 4h 16m Nov 21, 2025  3:50 PM warn icon Warn</td><td>2026-03-26</td></tr><tr><td><a href="https://statusgator.com/services/meta/platform-status" target="_blank" style="color:var(--accent)">StatusGator (Official)</a></td><td><span class="comp-tag">Platform</span></td><td><span class="badge minor">MINOR</span></td><td>Incident description Duration StatusGator detected Officially acknowledged</td><td>2026-03-26</td></tr><tr><td><a href="https://statusgator.com/services/meta/platform-status" target="_blank" style="color:var(--accent)">StatusGator (Official)</a></td><td><span class="comp-tag">Platform</span></td><td><span class="badge minor">MINOR</span></td><td>Problems signing in due to ReCaptcha verification errors 1h 15m Mar 20, 2026  7:45 PM Never acknowledged</td><td>2026-03-26</td></tr><tr><td><a href="https://statusgator.com/services/meta/platform-status" target="_blank" style="color:var(--accent)">StatusGator (Official)</a></td><td><span class="comp-tag">Platform</span></td><td><span class="badge minor">MINOR</span></td><td>Ads platform instability affecting campaign delivery 17m Mar 10, 2026  8:11 PM Never acknowledged</td><td>2026-03-26</td></tr><tr><td><a href="https://statusgator.com/services/meta/platform-status" target="_blank" style="color:var(--accent)">StatusGator (Official)</a></td><td><span class="comp-tag">Platform</span></td><td><span class="badge minor">MINOR</span></td><td>Metapay not processing donations. 34m Mar  9, 2026 10:11 PM 45m later</td><td>2026-03-26</td></tr><tr><td><a href="https://statusgator.com/services/meta/platform-status" target="_blank" style="color:var(--accent)">StatusGator (Official)</a></td><td><span class="comp-tag">Platform</span></td><td><span class="badge minor">MINOR</span></td><td>Image upload fails to complete in upload Flow 2h 47m Mar  5, 2026  1:26 PM 2h 15m later</td><td>2026-03-26</td></tr><tr><td><a href="https://statusgator.com/services/meta/platform-status" target="_blank" style="color:var(--accent)">StatusGator (Official)</a></td><td><span class="comp-tag">Platform</span></td><td><span class="badge minor">MINOR</span></td><td>Meta AI not responding 38m Aug 20, 2025 10:30 PM Never acknowledged</td><td>2026-03-26</td></tr><tr><td><a href="https://statusgator.com/services/meta/platform-status" target="_blank" style="color:var(--accent)">StatusGator (Official)</a></td><td><span class="comp-tag">Platform</span></td><td><span class="badge minor">MINOR</span></td><td>Ads not loading 1h 18m Jun 13, 2025  7:29 AM Never acknowledged</td><td>2026-03-26</td></tr><tr><td><a href="https://statusgator.com/services/meta/platform-status" target="_blank" style="color:var(--accent)">StatusGator (Official)</a></td><td><span class="comp-tag">Instagram</span></td><td><span class="badge minor">MINOR</span></td><td>Issues loading content on Threads and Instagram 30m Mar 20, 2025 11:44 PM Never acknowledged</td><td>2026-03-26</td></tr><tr><td><a href="https://statusgator.com/services/meta/platform-status" target="_blank" style="color:var(--accent)">StatusGator (Official)</a></td><td><span class="comp-tag">Payments</span></td><td><span class="badge minor">MINOR</span></td><td>Issues adding payment method 37m Mar  6, 2025  4:41 AM Never acknowledged</td><td>2026-03-26</td></tr><tr><td><a href="https://statusgator.com/services/meta/platform-status" target="_blank" style="color:var(--accent)">StatusGator (Official)</a></td><td><span class="comp-tag">WhatsApp API</span></td><td><span class="badge minor">MINOR</span></td><td>Issues with sending messages on WhatsApp and Facebook Messenger 21m Feb 28, 2025  3:49 PM Never acknowledged</td><td>2026-03-26</td></tr><tr><td><a href="https://statusgator.com/services/meta/platform-status" target="_blank" style="color:var(--accent)">StatusGator (Official)</a></td><td><span class="comp-tag">Platform</span></td><td><span class="badge minor">MINOR</span></td><td>Incident Name Duration Started Severity</td><td>2026-03-26</td></tr><tr><td><a href="https://statusgator.com/services/meta/platform-status" target="_blank" style="color:var(--accent)">StatusGator (Official)</a></td><td><span class="comp-tag">Platform</span></td><td><span class="badge minor">MINOR</span></td><td>More than 7,360 services monitored. check icon x icon</td><td>2026-03-26</td></tr><tr><td><a href="https://statusgator.com/services/meta/platform-status" target="_blank" style="color:var(--accent)">StatusGator (Official)</a></td><td><span class="comp-tag">Platform</span></td><td><span class="badge minor">MINOR</span></td><td>Proactive alerts on Meta Platform Status status changes sent to your Slack, Microsoft Teams, and more. check icon x icon</td><td>2026-03-26</td></tr><tr><td><a href="https://statusgator.com/services/meta/platform-status" target="_blank" style="color:var(--accent)">StatusGator (Official)</a></td><td><span class="comp-tag">Platform</span></td><td><span class="badge minor">MINOR</span></td><td>Monitoring of both Meta Platform Status and your own apps. check icon x icon</td><td>2026-03-26</td></tr><tr><td><a href="https://statusgator.com/services/meta/platform-status" target="_blank" style="color:var(--accent)">StatusGator (Official)</a></td><td><span class="comp-tag">Platform</span></td><td><span class="badge minor">MINOR</span></td><td>Granular monitoring of Meta Platform Status components. check icon x icon</td><td>2026-03-26</td></tr><tr><td><a href="https://isdown.app/status/meta" target="_blank" style="color:var(--accent)">IsDown</a></td><td><span class="comp-tag">Platform</span></td><td><span class="badge minor">MINOR</span></td><td>Meta not working for you? Report a problem Thank you for reporting an issue with Meta.</td><td>2026-03-26</td></tr></tbody></table></div>
+</div>
+
+<!-- OUTAGE NEWS -->
+<div class="card">
+    <h2><span class="icon">&#9888;&#65039;</span> Outage & Error Reports</h2>
+    <div class="news-item"><div class="title"><span class="badge critical">CRITICAL</span> <a href="http://www.bing.com/news/apiclick.aspx?ref=FexRss&aid=&tid=69c515fb09a84d30a7766133b4cb2740&url=https%3a%2f%2fwww.kgw.com%2farticle%2fnews%2fnation-world%2fis-facebook-down-users-report-issues-meta%2f507-c0d9b756-de5b-4dbd-ab0b-ab24da5f0c5f&c=16595652078119427155&mkt=en-ww" target="_blank">Facebook back up following brief outage</a></div><div class="meta-info">News &middot; 2026-03-03 14:15</div><div class="summary">WASHINGTON — Facebook is back to normal following a brief outage on Tuesday afternoon. Around 4 p.m. ET, reports began spiking on outage tracking website DownDetector. More than 10,000 users reported ...</div></div>
+<div class="news-item"><div class="title"><span class="badge critical">CRITICAL</span> <a href="http://www.bing.com/news/apiclick.aspx?ref=FexRss&aid=&tid=69c515fb09a84d30a7766133b4cb2740&url=https%3a%2f%2fwww.msn.com%2fen-in%2fmoney%2fnews%2ffacebook-was-down-for-hours-leaving-thousands-of-users-locked-out%2far-AA1XtNIa&c=8235192918795784519&mkt=en-ww" target="_blank">Facebook was down for hours, leaving thousands of users locked out</a></div><div class="meta-info">News &middot; 2026-03-03 20:26</div><div class="summary">Facebook experienced a widespread outage Tuesday afternoon, leaving users globally unable to access their feeds and causing significant disruption to advertisers. Reports flooded in from multiple ...</div></div>
+<div class="news-item"><div class="title"><span class="badge critical">CRITICAL</span> <a href="http://www.bing.com/news/apiclick.aspx?ref=FexRss&aid=&tid=69c515fb09a84d30a7766133b4cb2740&url=https%3a%2f%2fwww.channelnewsasia.com%2fbusiness%2ffacebook-largely-back-up-after-brief-outage-in-us-downdetector-shows-5968406&c=10394373427445924501&mkt=en-ww" target="_blank">Facebook largely back up after brief outage in the US, Downdetector shows</a></div><div class="meta-info">News &middot; 2026-03-03 22:53</div><div class="summary">March 3 : Meta Platforms' Facebook was largely back up after an outage that affected thousands of users in the U.S. on Tuesday, according to Downdetector.com. At its peak, there were more than 11,000 ...</div></div>
+<div class="news-item"><div class="title"><span class="badge critical">CRITICAL</span> <a href="http://www.bing.com/news/apiclick.aspx?ref=FexRss&aid=&tid=69c515fed9c24399bee3062bd5edc120&url=https%3a%2f%2fwww.livemint.com%2ftechnology%2ffacebook-instagram-tiktok-down-thousands-report-receiving-your-account-is-currently-unavailable-message-11772582998174.html&c=9203606616559923932&mkt=en-ww" target="_blank">Facebook, Instagram, TikTok down? Thousands report receiving ‘Your account is currently unavailable’ message</a></div><div class="meta-info">News &middot; 2026-03-04 03:52</div><div class="summary">Facebook, Tiktok, and Instagram is down for users across the globe as hundreds of people report outages. Users have reported receiving ‘Your account is currently unavailable due to a site ...</div></div>
+
+</div>
+
+<!-- RELEASES -->
+<div class="card">
+    <h2><span class="icon">&#128640;</span> Meta Ads Releases & Rollouts — March 2026</h2>
+    <div style="max-height:480px;overflow-y:auto;">
+    <table><thead><tr><th>Date</th><th>Category</th><th>Impact</th><th>Details</th></tr></thead>
+    <tbody><tr><td>2026-03-31</td><td><span class="cat-tag">API</span></td><td><span class="badge high">HIGH</span></td><td><strong>Webhooks mTLS Certificate Change</strong><br><span style="color:var(--text-dim);font-size:12px">Webhooks mTLS certificates switching to Meta CA. Trust store updates required.</span></td></tr>
+<tr><td>2026-03-25</td><td><span class="cat-tag">Policy</span></td><td><span class="badge medium">MEDIUM</span></td><td><strong>Account Health Score in Ads Manager</strong><br><span style="color:var(--text-dim);font-size:12px">Visible Account Health Score (0-100) now displayed.</span></td></tr>
+<tr><td>2026-03-20</td><td><span class="cat-tag">API</span></td><td><span class="badge medium">MEDIUM</span></td><td><strong>Graph API v25 — Page Viewer Metric</strong><br><span style="color:var(--text-dim);font-size:12px">New Page Viewer Metric replacing legacy reach. Deprecation by June 2026.</span></td></tr>
+<tr><td>2026-03-18</td><td><span class="cat-tag">New Placements</span></td><td><span class="badge high">HIGH</span></td><td><strong>Threads Ads — Global Rollout</strong><br><span style="color:var(--text-dim);font-size:12px">Threads in ad ecosystem with global delivery. Image/video with full Ads Manager integration.</span></td></tr>
+<tr><td>2026-03-15</td><td><span class="cat-tag">Automation</span></td><td><span class="badge high">HIGH</span></td><td><strong>Advantage+ as Default for New Campaigns</strong><br><span style="color:var(--text-dim);font-size:12px">Advantage+ automation tools are now the default for all new campaigns.</span></td></tr>
+<tr><td>2026-03-15</td><td><span class="cat-tag">Automation</span></td><td><span class="badge high">HIGH</span></td><td><strong>Advantage+ Leads Campaigns — Global Launch</strong><br><span style="color:var(--text-dim);font-size:12px">Advantage+ Leads Campaigns now available globally.</span></td></tr>
+<tr><td>2026-03-12</td><td><span class="cat-tag">Campaign Goals</span></td><td><span class="badge medium">MEDIUM</span></td><td><strong>Instagram/Facebook Page Visits Goal</strong><br><span style="color:var(--text-dim);font-size:12px">New performance goal: 'Maximise Number of Profile/Page Visits'.</span></td></tr>
+<tr><td>2026-03-12</td><td><span class="cat-tag">Campaign Features</span></td><td><span class="badge medium">MEDIUM</span></td><td><strong>Ad Sequencing for Awareness & Engagement</strong><br><span style="color:var(--text-dim);font-size:12px">Ad Sequencing now available for Awareness and Engagement objectives.</span></td></tr>
+<tr><td>2026-03-10</td><td><span class="cat-tag">Ad Formats</span></td><td><span class="badge high">HIGH</span></td><td><strong>New Ad Format Selection System</strong><br><span style="color:var(--text-dim);font-size:12px">Single ad can now use multiple formats and creatives.</span></td></tr>
+<tr><td>2026-03-10</td><td><span class="cat-tag">Ad Formats</span></td><td><span class="badge medium">MEDIUM</span></td><td><strong>CTA Button Behavior Change</strong><br><span style="color:var(--text-dim);font-size:12px">CTA in Ads Manager no longer modifies original organic posts.</span></td></tr>
+<tr><td>2026-03-08</td><td><span class="cat-tag">Targeting</span></td><td><span class="badge high">HIGH</span></td><td><strong>'Describe Your Audience' Natural Language Targeting</strong><br><span style="color:var(--text-dim);font-size:12px">AI-powered text box in Advantage+ Targeting — write plain-text audience descriptions.</span></td></tr>
+<tr><td>2026-03-08</td><td><span class="cat-tag">Targeting</span></td><td><span class="badge high">HIGH</span></td><td><strong>Custom Audience Engagement Filters</strong><br><span style="color:var(--text-dim);font-size:12px">New retargeting filters: engagement frequency and time frame.</span></td></tr>
+<tr><td>2026-03-05</td><td><span class="cat-tag">Reporting</span></td><td><span class="badge medium">MEDIUM</span></td><td><strong>New 'Conversion Count' Breakdown</strong><br><span style="color:var(--text-dim);font-size:12px">New breakdown dimension added to Ads Manager reporting.</span></td></tr>
+<tr><td>2026-03-01</td><td><span class="cat-tag">Metrics</span></td><td><span class="badge high">HIGH</span></td><td><strong>Attribution Metric Alignment Update</strong><br><span style="color:var(--text-dim);font-size:12px">Click-through attribution now counts only link clicks. Non-link interactions categorized as engage-through.</span></td></tr>
+<tr><td>2026-03-01</td><td><span class="cat-tag">Metrics</span></td><td><span class="badge high">HIGH</span></td><td><strong>Video Engaged-View Threshold Changed</strong><br><span style="color:var(--text-dim);font-size:12px">Engaged-view threshold dropped from 10 to 5 seconds for video ads.</span></td></tr>
+
+        <tr><td colspan="4" style="padding:10px;font-weight:700;color:var(--orange);font-size:11px;text-transform:uppercase;letter-spacing:1px">&#9203; Upcoming Changes</td></tr>
+        <tr style="opacity:0.7"><td>2026-04-01</td><td><span class="cat-tag">Billing</span></td><td><span class="badge warning">UPCOMING</span></td><td><strong>Location Fees (Digital Service Tax)</strong><br><span style="color:var(--text-dim);font-size:12px">Extra charges in AT(5%), FR(3%), IT(3%), ES(3%), TR(5%), UK(2%). Based on where ads shown.</span></td></tr>
+<tr style="opacity:0.7"><td>2026-06-01</td><td><span class="cat-tag">API</span></td><td><span class="badge warning">UPCOMING</span></td><td><strong>Legacy Page Reach Metric Deprecation</strong><br><span style="color:var(--text-dim);font-size:12px">Legacy reach metric fully removed. Migrate to Page Viewer Metric.</span></td></tr>
+<tr style="opacity:0.7"><td>2026-09-01</td><td><span class="cat-tag">API</span></td><td><span class="badge warning">UPCOMING</span></td><td><strong>ASC/AAC Campaign API Deprecation</strong><br><span style="color:var(--text-dim);font-size:12px">Marketing API phases out legacy Advantage Shopping and App Campaign APIs.</span></td></tr>
+
+    </tbody></table>
+    </div>
+</div>
+
+<!-- SOURCES -->
+<div class="sources-box">
+    <strong>Data Sources & Verification:</strong>
+    <div><strong>[1]</strong> SuperAds.ai CPM Benchmarks — <a href="https://www.superads.ai/facebook-ads-costs/cpm-cost-per-mille" target="_blank">Monthly CPM, $3B ad spend analysis</a></div>
+<div><strong>[2]</strong> Right Side Up / Varos — <a href="https://www.rightsideup.com/blog/facebook-cpm-trends" target="_blank">Q1 2026 CPM analysis</a></div>
+<div><strong>[3]</strong> SuperAds.ai CPC Benchmarks — <a href="https://www.superads.ai/facebook-ads-costs/cpc-cost-per-click" target="_blank">Monthly CPC, global median</a></div>
+<div><strong>[4]</strong> AdAmigo.ai — <a href="https://www.adamigo.ai/blog/meta-ads-cpm-cpc-benchmarks-by-country-2026" target="_blank">2026 CPC by country</a></div>
+<div><strong>[5]</strong> Adjust — State of Dating Apps — <a href="https://www.adjust.com/blog/state-of-dating-apps/" target="_blank">Dating CPM/CPC/CPI benchmarks</a></div>
+<div><strong>[6]</strong> Triple Whale — <a href="https://www.triplewhale.com/blog/facebook-ads-benchmarks" target="_blank">Industry benchmarks, 35K+ accounts</a></div>
+<div><strong>[7]</strong> StatusGator — <a href="https://statusgator.com/services/meta/platform-status" target="_blank">Official Meta status monitoring</a></div>
+<div><strong>[8]</strong> IsDown — <a href="https://isdown.app/status/meta" target="_blank">Meta incidents aggregator</a></div>
+<div><strong>[9]</strong> SwipeInsight — <a href="https://web.swipeinsight.app/topics/meta-ads" target="_blank">Meta Ads news & releases</a></div>
+
+    <div style="margin-top:6px"><em>Daily values interpolated from monthly anchors with day-of-week patterns. Refresh: <code>python run.py</code></em></div>
+</div>
+
+</div>
+
+<script>
+const lineOpts = {
+    responsive:true, maintainAspectRatio:false,
+    interaction:{intersect:false,mode:'index'},
+    plugins:{
+        legend:{labels:{color:'#7b7f96',font:{size:10}}},
+        tooltip:{backgroundColor:'#1c2030',titleColor:'#e2e4ee',bodyColor:'#e2e4ee',borderColor:'#262b3e',borderWidth:1}
+    },
+    scales:{
+        x:{ticks:{color:'#7b7f96',font:{size:9},maxRotation:45},grid:{color:'rgba(38,43,62,.4)'}},
+        y:{ticks:{color:'#7b7f96',font:{size:10},callback:v=>'$'+parseFloat(v.toFixed(2))},grid:{color:'rgba(38,43,62,.4)'}}
+    }
+};
+
+const barOpts = {
+    responsive:true, maintainAspectRatio:false,
+    interaction:{intersect:false,mode:'index'},
+    plugins:{
+        legend:{labels:{color:'#7b7f96',font:{size:10}}},
+        tooltip:{backgroundColor:'#1c2030',titleColor:'#e2e4ee',bodyColor:'#e2e4ee',borderColor:'#262b3e',borderWidth:1}
+    },
+    scales:{
+        x:{stacked:true,ticks:{color:'#7b7f96',font:{size:9},maxRotation:45},grid:{display:false}},
+        y:{stacked:true,ticks:{color:'#7b7f96',font:{size:10},stepSize:1},grid:{color:'rgba(38,43,62,.4)'}}
+    }
+};
+
+// CPM daily chart
+new Chart(document.getElementById('cpmChart'),{
+    type:'line',
+    data:{
+        labels:["Feb 25", "Feb 26", "Feb 27", "Feb 28", "Mar 01", "Mar 02", "Mar 03", "Mar 04", "Mar 05", "Mar 06", "Mar 07", "Mar 08", "Mar 09", "Mar 10", "Mar 11", "Mar 12", "Mar 13", "Mar 14", "Mar 15", "Mar 16", "Mar 17", "Mar 18", "Mar 19", "Mar 20", "Mar 21", "Mar 22", "Mar 23", "Mar 24", "Mar 25", "Mar 26"],
+        datasets:[
+            {label:'All Industries CPM',data:[17.1, 16.11, 16.96, 16.31, 15.45, 16.52, 17.17, 17.71, 17.56, 17.69, 15.79, 16.64, 17.73, 17.29, 17.95, 17.86, 17.85, 16.35, 16.36, 17.71, 17.31, 17.69, 17.76, 17.07, 17.13, 15.76, 17.12, 16.93, 16.97, 18.14],borderColor:'#4f8cff',backgroundColor:'rgba(79,140,255,.06)',fill:true,tension:.3,pointRadius:2,pointHoverRadius:5,borderWidth:2},
+            {label:'Dating CPM',data:[8.24, 7.77, 8.17, 7.87, 6.66, 7.12, 7.4, 7.63, 7.57, 7.62, 6.8, 7.17, 7.64, 7.45, 7.74, 7.7, 7.69, 7.04, 7.05, 7.63, 7.46, 7.62, 7.65, 7.36, 7.38, 6.79, 7.38, 7.29, 7.31, 7.82],borderColor:'#f472b6',backgroundColor:'rgba(244,114,182,.06)',fill:true,tension:.3,pointRadius:2,pointHoverRadius:5,borderWidth:2}
+        ]
+    },
+    options:lineOpts,
+});
+
+// CPC daily chart
+new Chart(document.getElementById('cpcChart'),{
+    type:'line',
+    data:{
+        labels:["Feb 25", "Feb 26", "Feb 27", "Feb 28", "Mar 01", "Mar 02", "Mar 03", "Mar 04", "Mar 05", "Mar 06", "Mar 07", "Mar 08", "Mar 09", "Mar 10", "Mar 11", "Mar 12", "Mar 13", "Mar 14", "Mar 15", "Mar 16", "Mar 17", "Mar 18", "Mar 19", "Mar 20", "Mar 21", "Mar 22", "Mar 23", "Mar 24", "Mar 25", "Mar 26"],
+        datasets:[
+            {label:'All Industries CPC',data:[0.93, 0.92, 0.91, 0.88, 0.92, 0.98, 0.95, 0.96, 0.95, 0.99, 0.92, 0.88, 0.94, 0.95, 1.0, 0.96, 1.0, 0.93, 0.92, 0.97, 0.99, 0.96, 0.98, 1.0, 0.94, 0.92, 0.98, 1.0, 0.95, 0.97],borderColor:'#4f8cff',backgroundColor:'rgba(79,140,255,.06)',fill:true,tension:.3,pointRadius:2,pointHoverRadius:5,borderWidth:2},
+            {label:'Dating CPC',data:[0.47, 0.46, 0.45, 0.44, 0.39, 0.42, 0.41, 0.41, 0.41, 0.42, 0.39, 0.38, 0.4, 0.41, 0.43, 0.41, 0.43, 0.4, 0.39, 0.42, 0.43, 0.41, 0.42, 0.43, 0.4, 0.39, 0.42, 0.43, 0.41, 0.42],borderColor:'#f472b6',backgroundColor:'rgba(244,114,182,.06)',fill:true,tension:.3,pointRadius:2,pointHoverRadius:5,borderWidth:2}
+        ]
+    },
+    options:lineOpts,
+});
+
+// Incidents 14-day bar
+new Chart(document.getElementById('incidentsBar'),{
+    type:'bar',
+    data:{
+        labels:["Mar 13", "Mar 14", "Mar 15", "Mar 16", "Mar 17", "Mar 18", "Mar 19", "Mar 20", "Mar 21", "Mar 22", "Mar 23", "Mar 24", "Mar 25", "Mar 26"],
+        datasets:[
+            {label:'Major',data:[1, 0, 0, 0, 0, 1, 0, 1, 1, 1, 0, 0, 0, 3],backgroundColor:'rgba(248,113,113,.7)',borderRadius:3},
+            {label:'Minor',data:[2, 1, 2, 0, 0, 3, 0, 3, 3, 3, 1, 2, 0, 5],backgroundColor:'rgba(251,191,36,.5)',borderRadius:3}
+        ]
+    },
+    options:barOpts,
+});
+
+// Outage reports 14-day bar
+new Chart(document.getElementById('outageBar'),{
+    type:'bar',
+    data:{
+        labels:["Mar 13", "Mar 14", "Mar 15", "Mar 16", "Mar 17", "Mar 18", "Mar 19", "Mar 20", "Mar 21", "Mar 22", "Mar 23", "Mar 24", "Mar 25", "Mar 26"],
+        datasets:[
+            {label:'Critical',data:[0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 1, 2, 1],backgroundColor:'rgba(248,113,113,.7)',borderRadius:3},
+            {label:'High',data:[0, 0, 2, 0, 1, 0, 2, 0, 0, 1, 0, 1, 3, 2],backgroundColor:'rgba(251,191,36,.5)',borderRadius:3},
+            {label:'Medium',data:[1, 0, 3, 0, 2, 1, 3, 1, 0, 2, 1, 2, 3, 3],backgroundColor:'rgba(79,140,255,.4)',borderRadius:3}
+        ]
+    },
+    options:barOpts,
+});
+
+function doRefresh(btn) {
+    btn.disabled = true;
+    btn.textContent = 'Refreshing…';
+    fetch('/refresh', {method: 'POST'})
+        .then(r => {
+            if (r.status === 409) { btn.textContent = 'Already running…'; return; }
+            if (!r.ok) throw new Error('Server error');
+            location.reload();
+        })
+        .catch(e => {
+            btn.textContent = '⚠ Error';
+            setTimeout(() => { btn.disabled = false; btn.innerHTML = '&#x21bb; Refresh Data'; }, 3000);
+        });
+}
+</script>
+</body>
+</html>

@@ -9,6 +9,7 @@ Usage:
     python run.py --no-serve # Fetch + generate only (no server)
 """
 
+import os
 import sys
 import webbrowser
 
@@ -36,7 +37,8 @@ def main():
         print("=" * 60)
         return
 
-    url = "http://127.0.0.1:8765"
+    port = int(os.getenv("PORT", "8765"))
+    url = f"http://127.0.0.1:{port}"
 
     if "--no-open" not in sys.argv:
         webbrowser.open(url)
@@ -48,7 +50,7 @@ def main():
     print()
 
     from server import app
-    app.run(host="127.0.0.1", port=8765, debug=False)
+    app.run(host="0.0.0.0", port=port, debug=False)
 
 
 if __name__ == "__main__":

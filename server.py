@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Tiny Flask server for Meta Ads Dashboard with refresh support."""
 
+import os
 import threading
 
 from flask import Flask, jsonify, send_file
@@ -34,4 +35,5 @@ def refresh():
 
 
 if __name__ == "__main__":
-    app.run(host="127.0.0.1", port=8765, debug=False)
+    port = int(os.getenv("PORT", "8765"))
+    app.run(host="0.0.0.0", port=port, debug=False)
